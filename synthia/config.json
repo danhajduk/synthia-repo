@@ -1,10 +1,14 @@
 {
   "name": "Synthia - AI Personal Assistant",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "slug": "synthia",
   "description": "A personal AI assistant for Home Assistant.",
   "startup": "application",
   "boot": "auto",
+  "ingress": true,
+  "ingress_port": 5000,
+  "panel_icon": "mdi:email",
+  "panel_title": "Synthia",
   "arch": ["amd64", "armv7", "armhf"],
   "options": {
     "general": {

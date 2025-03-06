@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 CONFIG_PATH = "/data/options.json"
 DATA_FILE = "/data/email_data.json"
@@ -46,4 +46,4 @@ def status():
     return jsonify(email_data)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)
