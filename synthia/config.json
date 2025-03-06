@@ -5,7 +5,8 @@
   "description": "A personal AI assistant for Home Assistant.",
   "startup": "application",
   "boot": "auto",
-  "image": "danhajduk/synthia-{arch}",
+  "image": "ghcr.io/danhajduk/synthia-{arch}",
+  "arch": ["amd64", "armv7", "armhf"],
   "options": {},
   "schema": {}
 }
