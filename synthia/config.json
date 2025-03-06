@@ -1,20 +1,11 @@
 {
-  "name": "Synthia",
-  "version": "1.0.0",
+  "name": "Synthia - AI Personal Assistant",
+  "version": "1.0",
   "slug": "synthia",
-  "description": "Your personal AI assistant for email summaries and more.",
-  "startup": "once",
+  "description": "A personal AI assistant for Home Assistant.",
+  "startup": "application",
   "boot": "auto",
-  "init": false,
-  "arch": ["amd64", "armv7", "armhf"],
-  "options": {
-    "gmail_api_key": "",
-    "openai_api_key": "",
-    "notify_service": "notify.mobile_app_your_phone"
-  },
-  "schema": {
-    "gmail_api_key": "str",
-    "openai_api_key": "str",
-    "notify_service": "str"
-  }
+  "image": "danhajduk/synthia-{arch}",
+  "options": {},
+  "schema": {}
 }
