@@ -9,12 +9,16 @@ CONFIG_PATH = "/data/options.json"
 DATA_FILE = "/data/email_data.json"
 
 def load_email_data():
-    """Load the last email fetch data."""
+    """Load the last email fetch data and sort senders by email count."""
     try:
         if not os.path.exists(DATA_FILE):
             return {"unread_count": 0, "last_fetch": "Never", "senders": {}}
         with open(DATA_FILE, "r") as f:
-            return json.load(f)
+            email_data = json.load(f)
+        
+        # Sort senders by email count (highest to lowest)
+        email_data["senders"] = dict(sorted(email_data.get("senders", {}).items(), key=lambda item: item[1], reverse=True))
+        return email_data
     except json.JSONDecodeError:
         return {"unread_count": 0, "last_fetch": "Never", "senders": {}}
 
