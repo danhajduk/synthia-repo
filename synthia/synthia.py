@@ -49,7 +49,7 @@ def authenticate_gmail():
     return build("gmail", "v1", credentials=creds)
 
 def fetch_unread_email_count():
-    """Fetch the number of unread emails."""
+    """Fetch the total number of unread emails using pagination."""
     logging.info("Checking for unread emails...")
     service = authenticate_gmail()
 
@@ -58,10 +58,28 @@ def fetch_unread_email_count():
         return
 
     try:
-        results = service.users().messages().list(userId="me", labelIds=["INBOX"], q="is:unread").execute()
-        messages = results.get("messages", [])
-        unread_count = len(messages)
-        logging.info(f"📩 You have {unread_count} unread emails.")
+        total_unread = 0
+        next_page_token = None
+
+        while True:
+            results = service.users().messages().list(
+                userId="me",
+                labelIds=["INBOX"],
+                q="is:unread",
+                maxResults=500,  # Fetch in batches of 500
+                pageToken=next_page_token
+            ).execute()
+
+            messages = results.get("messages", [])
+            total_unread += len(messages)
+
+            # Check if there are more pages
+            next_page_token = results.get("nextPageToken", None)
+            if not next_page_token:
+                break  # Exit loop when all emails are counted
+
+        logging.info(f"📩 You have {total_unread} unread emails.")
+
     except Exception as e:
         logging.error(f"Error fetching emails: {e}")
 
