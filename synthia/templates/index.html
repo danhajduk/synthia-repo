@@ -26,8 +26,10 @@
             position: relative;
             width: 64px;
             height: 64px;
-            background: url('/static/gmail.png') no-repeat center;
-            background-size: cover;
+        }
+        .gmail-icon img {
+            width: 100%;
+            height: 100%;
         }
         .badge {
             position: absolute;
@@ -50,6 +52,7 @@
     <div class="container">
         <h1>Synthia Email Status</h1>
         <div class="gmail-icon">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" alt="Gmail Icon">
             <div class="badge">{{ unread_count }}</div>
         </div>
         <div class="data">
