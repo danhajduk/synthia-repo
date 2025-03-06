@@ -1,5 +1,6 @@
 import time
 import logging
+import sqlite3
 import json
 import os
 import requests
@@ -18,17 +19,42 @@ logging.basicConfig(
 
 # Paths
 CONFIG_PATH = "/data/options.json"
-DATA_FILE = "/data/email_data.json"
+DB_PATH = "/config/home-assistant_v2.db"  # Use HA's database
+
+def connect_db():
+    """Establish connection to HA's database."""
+    return sqlite3.connect(DB_PATH)
+
+def create_table():
+    """Create table in HA's database if it doesn't exist."""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS synthia_emails (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            unread_count INTEGER,
+            sender TEXT,
+            email_count INTEGER
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 def save_email_data(unread_count, sender_counts):
-    """Save unread email count & sender counts to a file for the UI."""
-    email_data = {
-        "unread_count": unread_count,
-        "last_fetch": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
-        "senders": sender_counts
-    }
-    with open(DATA_FILE, "w") as f:
-        json.dump(email_data, f)
+    """Save unread email count & sender counts to HA's database."""
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    for sender, count in sender_counts.items():
+        cursor.execute('''
+            INSERT INTO synthia_emails (timestamp, unread_count, sender, email_count)
+            VALUES (?, ?, ?, ?)
+        ''', (timestamp, unread_count, sender, count))
+
+    conn.commit()
+    conn.close()
 
 # Load Configuration from Home Assistant
 try:
@@ -66,7 +92,7 @@ def authenticate_gmail():
     return build("gmail", "v1", credentials=creds)
 
 def fetch_unread_email_count():
-    """Fetch unread emails, process senders, & save data for the UI."""
+    """Fetch unread emails, process senders, & save data to HA's database."""
     if not enable_gmail:
         logging.info("Gmail fetching is disabled.")
         return
@@ -112,13 +138,14 @@ def fetch_unread_email_count():
                 break  # Exit loop when all emails are counted
 
         logging.info(f"📩 You have {total_unread} unread emails.")
-        save_email_data(total_unread, sender_counts)  # Save for UI
+        save_email_data(total_unread, sender_counts)  # Save to HA's database
 
     except Exception as e:
         logging.error(f"Error fetching emails: {e}")
 
 if __name__ == "__main__":
     logging.info("Synthia is running...")
+    create_table()  # Ensure table exists
     last_fetch_time = 0
 
     # Start Flask UI in a separate thread
