@@ -19,15 +19,26 @@ logging.basicConfig(
 
 # Paths
 CONFIG_PATH = "/data/options.json"
-DB_PATH = "/config/home-assistant_v2.db"  # Use HA's database
+DB_PATH = "/config/home-assistant_v2.db"  # Home Assistant's database path
 
 def connect_db():
-    """Establish connection to HA's database."""
-    return sqlite3.connect(DB_PATH)
+    """Ensure database exists and has correct permissions."""
+    if not os.path.exists(DB_PATH):
+        logging.error(f"Database file {DB_PATH} does not exist!")
+        return None
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=10)
+        return conn
+    except sqlite3.OperationalError as e:
+        logging.error(f"Database connection failed: {e}")
+        return None
 
 def create_table():
     """Create table in HA's database if it doesn't exist."""
     conn = connect_db()
+    if conn is None:
+        logging.error("Could not establish database connection.")
+        return
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS synthia_emails (
@@ -40,11 +51,15 @@ def create_table():
     ''')
     conn.commit()
     conn.close()
+    logging.info("Table 'synthia_emails' created or already exists.")
 
 def save_email_data(unread_count, sender_counts):
     """Save unread email count & sender counts to HA's database."""
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
     conn = connect_db()
+    if conn is None:
+        logging.error("Could not connect to database to save data.")
+        return
     cursor = conn.cursor()
 
     for sender, count in sender_counts.items():
@@ -55,6 +70,7 @@ def save_email_data(unread_count, sender_counts):
 
     conn.commit()
     conn.close()
+    logging.info("Email data successfully saved to database.")
 
 # Load Configuration from Home Assistant
 try:
