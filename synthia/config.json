@@ -1,6 +1,6 @@
 {
   "name": "Synthia - AI Personal Assistant",
-  "version": "0.0.9g",
+  "version": "0.0.10",
   "slug": "synthia",
   "description": "A personal AI assistant for Home Assistant.",
   "startup": "application",

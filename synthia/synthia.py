@@ -8,7 +8,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 from threading import Thread
-from web import app  # Import the Flask app
+from web import app  # Import Flask app
 
 # Configure Logging
 logging.basicConfig(
@@ -20,11 +20,12 @@ logging.basicConfig(
 CONFIG_PATH = "/data/options.json"
 DATA_FILE = "/data/email_data.json"
 
-def save_email_data(unread_count):
-    """Save unread email count & timestamp to a file."""
+def save_email_data(unread_count, sender_counts):
+    """Save unread email count & sender counts to a file for the UI."""
     email_data = {
         "unread_count": unread_count,
-        "last_fetch": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        "last_fetch": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "senders": sender_counts
     }
     with open(DATA_FILE, "w") as f:
         json.dump(email_data, f)
@@ -65,7 +66,7 @@ def authenticate_gmail():
     return build("gmail", "v1", credentials=creds)
 
 def fetch_unread_email_count():
-    """Fetch unread emails & save to file for UI."""
+    """Fetch unread emails, process senders, & save data for the UI."""
     if not enable_gmail:
         logging.info("Gmail fetching is disabled.")
         return
@@ -79,6 +80,7 @@ def fetch_unread_email_count():
 
     try:
         total_unread = 0
+        sender_counts = {}
         next_page_token = None
         date_since = (datetime.utcnow() - timedelta(days=days_to_fetch)).strftime("%Y/%m/%d")
         query = f"is:unread after:{date_since}"
@@ -94,12 +96,23 @@ def fetch_unread_email_count():
 
             messages = results.get("messages", [])
             total_unread += len(messages)
+
+            for msg in messages:
+                msg_data = service.users().messages().get(userId="me", id=msg["id"], format="metadata", metadataHeaders=["From"]).execute()
+                headers = msg_data.get("payload", {}).get("headers", [])
+                sender = next((h["value"] for h in headers if h["name"] == "From"), "Unknown Sender")
+
+                # Extract sender name or domain
+                sender_name = sender.split("<")[0].strip() if "<" in sender else sender.split("@")[0]
+                sender_counts[sender_name] = sender_counts.get(sender_name, 0) + 1
+
+            # Check if there are more pages
             next_page_token = results.get("nextPageToken", None)
             if not next_page_token:
-                break
+                break  # Exit loop when all emails are counted
 
         logging.info(f"📩 You have {total_unread} unread emails.")
-        save_email_data(total_unread)  # Save for UI
+        save_email_data(total_unread, sender_counts)  # Save for UI
 
     except Exception as e:
         logging.error(f"Error fetching emails: {e}")
