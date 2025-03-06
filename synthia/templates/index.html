@@ -7,20 +7,38 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
+            display: flex;
+            justify-content: flex-start; /* Align content to the left */
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding-left: 40px;
+            background-color: #f4f4f4;
         }
         .container {
-            max-width: 400px;
-            margin: auto;
+            width: 300px;
             padding: 20px;
-            border: 1px solid #ddd;
+            background: white;
             border-radius: 10px;
-            box-shadow: 2px 2px 10px #ccc;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
         }
         .gmail-icon {
-            font-size: 40px;
-            color: red;
+            position: relative;
+            width: 64px;
+            height: 64px;
+            background: url('/static/gmail.png') no-repeat center;
+            background-size: cover;
+        }
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 12px;
         }
         .data {
             font-size: 18px;
@@ -31,7 +49,9 @@
 <body>
     <div class="container">
         <h1>Synthia Email Status</h1>
-        <div class="gmail-icon">📧</div>
+        <div class="gmail-icon">
+            <div class="badge">{{ unread_count }}</div>
+        </div>
         <div class="data">
             <p><strong>Unread Emails:</strong> {{ unread_count }}</p>
             <p><strong>Last Fetch:</strong> {{ last_fetch }}</p>
