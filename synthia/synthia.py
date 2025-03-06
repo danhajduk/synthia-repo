@@ -4,19 +4,35 @@ import base64
 import requests
 import pickle
 import time
+import logging
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+# Configure Logging
+LOG_FILE = "/data/synthia.log"
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+logger.info("Synthia is starting...")
+
 # Load Home Assistant Configuration
 CONFIG_PATH = "/data/options.json"
-with open(CONFIG_PATH) as f:
-    config = json.load(f)
 
-NOTIFY_SERVICE = config["notify_service"]
+try:
+    with open(CONFIG_PATH) as f:
+        config = json.load(f)
+        NOTIFY_SERVICE = config.get("notify_service", "notify.default")
+except Exception as e:
+    logger.error(f"Failed to load configuration: {e}")
+    NOTIFY_SERVICE = "notify.default"
 
-# Path to credentials.json (update with correct path)
+# Path to credentials.json and token.pickle
 CREDENTIALS_PATH = "/data/credentials.json"
 TOKEN_PATH = "/data/token.pickle"
 
@@ -25,54 +41,89 @@ SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 def authenticate_gmail():
     """Authenticate with Gmail API and return a service object."""
+    logger.info("Authenticating with Gmail API...")
     creds = None
+
     if os.path.exists(TOKEN_PATH):
-        with open(TOKEN_PATH, "rb") as token:
-            creds = pickle.load(token)
+        logger.info("Loading existing token...")
+        try:
+            with open(TOKEN_PATH, "rb") as token:
+                creds = pickle.load(token)
+        except Exception as e:
+            logger.error(f"Error loading token: {e}")
+            creds = None
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
+            logger.info("Refreshing expired token...")
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
-            creds = flow.run_local_server(port=0)
-        
-        with open(TOKEN_PATH, "wb") as token:
-            pickle.dump(creds, token)
+            logger.info("Requesting new authentication flow...")
+            try:
+                flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
+                creds = flow.run_local_server(port=0)
+            except Exception as e:
+                logger.error(f"Failed to authenticate with Gmail API: {e}")
+                return None
 
-    return build("gmail", "v1", credentials=creds)
+        # Save new credentials
+        try:
+            with open(TOKEN_PATH, "wb") as token:
+                pickle.dump(creds, token)
+            logger.info("Token saved successfully.")
+        except Exception as e:
+            logger.error(f"Failed to save token: {e}")
+
+    return build("gmail", "v1", credentials=creds) if creds else None
 
 def fetch_important_emails():
     """Fetch important unread emails from Gmail."""
+    logger.info("Fetching important unread emails...")
     service = authenticate_gmail()
-    results = service.users().messages().list(userId="me", labelIds=["IMPORTANT", "INBOX"], q="is:unread").execute()
-    messages = results.get("messages", [])
+    
+    if not service:
+        logger.error("Failed to authenticate with Gmail API.")
+        return []
 
-    email_summaries = []
-    for msg in messages[:3]:  # Fetch max 3 emails
-        msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
-        snippet = msg_data.get("snippet", "")
-        email_summaries.append(snippet)
+    try:
+        results = service.users().messages().list(userId="me", labelIds=["IMPORTANT", "INBOX"], q="is:unread").execute()
+        messages = results.get("messages", [])
+        logger.info(f"Found {len(messages)} unread important emails.")
 
-    return email_summaries
+        email_summaries = []
+        for msg in messages[:3]:  # Fetch max 3 emails
+            msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
+            snippet = msg_data.get("snippet", "")
+            email_summaries.append(snippet)
+            logger.debug(f"Fetched email snippet: {snippet}")
+
+        return email_summaries
+
+    except Exception as e:
+        logger.error(f"Error fetching emails: {e}")
+        return []
 
 def send_notification(message):
     """Send a notification to Home Assistant."""
+    logger.info(f"Sending notification: {message}")
     url = "http://supervisor/core/api/services/" + NOTIFY_SERVICE
     headers = {
         "Authorization": f"Bearer {os.getenv('SUPERVISOR_TOKEN')}",
         "Content-Type": "application/json",
     }
     data = {"message": message}
-    response = requests.post(url, headers=headers, json=data)
-    print("Notification sent:", response.status_code)
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        logger.info(f"Notification sent: {response.status_code}")
+    except Exception as e:
+        logger.error(f"Failed to send notification: {e}")
 
 if __name__ == "__main__":
-    print("Synthia is fetching emails...")
+    logger.info("Synthia is fetching emails...")
     emails = fetch_important_emails()
     if emails:
         for email in emails:
             send_notification(f"📩 New Important Email: {email}")
     else:
-        print("No new important emails.")
-
+        logger.info("No new important emails.")
