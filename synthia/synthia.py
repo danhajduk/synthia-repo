@@ -13,9 +13,12 @@ from googleapiclient.discovery import build
 # Configure Logging
 LOG_FILE = "/data/synthia.log"
 logging.basicConfig(
-    filename=LOG_FILE,
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE),
+        logging.StreamHandler()  # <-- Forces logs to console
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -28,6 +31,7 @@ try:
     with open(CONFIG_PATH) as f:
         config = json.load(f)
         NOTIFY_SERVICE = config.get("notify_service", "notify.default")
+        logger.info(f"Using notify service: {NOTIFY_SERVICE}")
 except Exception as e:
     logger.error(f"Failed to load configuration: {e}")
     NOTIFY_SERVICE = "notify.default"
@@ -78,29 +82,31 @@ def authenticate_gmail():
 
 def fetch_important_emails():
     """Fetch important unread emails from Gmail."""
-    logger.info("Fetching important unread emails...")
+    logger.debug("Step 1: Starting fetch_important_emails()")
+
     service = authenticate_gmail()
-    
     if not service:
-        logger.error("Failed to authenticate with Gmail API.")
+        logger.error("Step 2: Failed to authenticate Gmail API.")
         return []
 
     try:
+        logger.debug("Step 3: Fetching unread important emails...")
         results = service.users().messages().list(userId="me", labelIds=["IMPORTANT", "INBOX"], q="is:unread").execute()
         messages = results.get("messages", [])
-        logger.info(f"Found {len(messages)} unread important emails.")
+
+        logger.debug(f"Step 4: Found {len(messages)} unread emails.")
 
         email_summaries = []
         for msg in messages[:3]:  # Fetch max 3 emails
             msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
             snippet = msg_data.get("snippet", "")
             email_summaries.append(snippet)
-            logger.debug(f"Fetched email snippet: {snippet}")
+            logger.debug(f"Step 5: Email fetched - {snippet}")
 
         return email_summaries
 
     except Exception as e:
-        logger.error(f"Error fetching emails: {e}")
+        logger.error(f"Step 6: Error fetching emails: {e}")
         return []
 
 def send_notification(message):
