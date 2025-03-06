@@ -1,4 +1,4 @@
-FROM ghcr.io/home-assistant/amd64-base-python:3.10
+FROM python:3.10-slim
 
 # Set up environment
 WORKDIR /app
