@@ -7,24 +7,28 @@
   "boot": "auto",
   "arch": ["amd64", "armv7", "armhf"],
   "options": {
-    "log_interval": 10,
-    "fetch_interval_minutes": 10,
-    "days_to_fetch": 7,
-    "enable_gmail": true,
-    "custom_message": "Synthia is on",
+    "general": {
+      "log_interval": 10,
+      "fetch_interval_minutes": 10,
+      "days_to_fetch": 7,
+      "custom_message": "Synthia is on"
+    },
     "gmail": {
+      "enable_gmail": true,
       "client_id": "",
       "client_secret": "",
       "refresh_token": ""
     }
   },
   "schema": {
-    "log_interval": "int",
-    "fetch_interval_minutes": "int",
-    "days_to_fetch": "int",
-    "enable_gmail": "bool",
-    "custom_message": "str",
+    "general": {
+      "log_interval": "int",
+      "fetch_interval_minutes": "int",
+      "days_to_fetch": "int",
+      "custom_message": "str"
+    },
     "gmail": {
+      "enable_gmail": "bool",
       "client_id": "str",
       "client_secret": "str",
       "refresh_token": "str"

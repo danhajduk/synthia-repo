@@ -20,14 +20,17 @@ CONFIG_PATH = "/data/options.json"
 try:
     with open(CONFIG_PATH) as f:
         config = json.load(f)
-        log_interval = config.get("log_interval", 10)
-        fetch_interval = config.get("fetch_interval_minutes", 10) * 60  # Convert to seconds
-        days_to_fetch = config.get("days_to_fetch", 7)
-        enable_gmail = config.get("enable_gmail", True)
-        custom_message = config.get("custom_message", "Synthia is on")
-        
-        # Load Gmail Credentials
+
+        # General Settings
+        general_config = config.get("general", {})
+        log_interval = general_config.get("log_interval", 10)
+        fetch_interval = general_config.get("fetch_interval_minutes", 10) * 60  # Convert to seconds
+        days_to_fetch = general_config.get("days_to_fetch", 7)
+        custom_message = general_config.get("custom_message", "Synthia is on")
+
+        # Gmail Settings
         gmail_config = config.get("gmail", {})
+        enable_gmail = gmail_config.get("enable_gmail", True)
         gmail_client_id = gmail_config.get("client_id", "")
         gmail_client_secret = gmail_config.get("client_secret", "")
         gmail_refresh_token = gmail_config.get("refresh_token", "")
