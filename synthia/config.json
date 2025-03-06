@@ -1,11 +1,17 @@
 {
   "name": "Synthia - AI Personal Assistant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "slug": "synthia",
   "description": "A personal AI assistant for Home Assistant.",
   "startup": "application",
   "boot": "auto",
   "arch": ["amd64", "armv7", "armhf"],
-  "options": {},
-  "schema": {}
+  "options": {
+    "log_interval": 10,
+    "custom_message": "Synthia is on"
+  },
+  "schema": {
+    "log_interval": "int",
+    "custom_message": "str"
+  }
 }
