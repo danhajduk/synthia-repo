@@ -13,25 +13,25 @@
             height: 100vh;
             margin: 0;
             padding: 20px;
-            background: url('/static/synthia.webp') no-repeat center;
+            background: url('/static/synthia_logo.png') no-repeat center;
             background-size: contain;
             background-color: #f4f4f4; /* Fallback color */
         }
         .header {
             width: 100%;
             text-align: left;
-            font-size: 40px;
+            font-size: 45px;
             font-weight: bold;
             color: #333;
             margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            background: rgba(255, 255, 255, 0.7); /* Light background for readability */
+            background: rgba(255, 255, 255, 0.7);
             padding: 10px;
             border-radius: 8px;
         }
         .version {
-            font-size: 14px;
+            font-size: 18px;
             font-weight: normal;
             color: #777;
             margin-left: 10px;
@@ -39,10 +39,10 @@
         .container {
             width: 350px;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.9); /* Slight transparency */
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            text-align: left; /* Align text to the left */
         }
         .gmail-icon {
             position: relative;
@@ -68,13 +68,14 @@
         .data {
             font-size: 18px;
             margin-top: 10px;
+            text-align: left; /* Align text inside the box to the left */
         }
     </style>
 </head>
 <body>
     <div class="header">
         Synthia - Personal AI Assistant 
-        <span class="version">v1.0.9</span>
+        <span class="version">v{{ version }}</span>
     </div>
     <div class="container">
         <div class="gmail-icon">
