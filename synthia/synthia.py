@@ -6,6 +6,7 @@ import requests
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from datetime import datetime, timedelta
 
 # Configure Logging
 logging.basicConfig(
@@ -20,15 +21,22 @@ try:
     with open(CONFIG_PATH) as f:
         config = json.load(f)
         log_interval = config.get("log_interval", 10)
-        fetch_interval = config.get("fetch_interval", 60)
+        fetch_interval = config.get("fetch_interval_minutes", 10) * 60  # Convert to seconds
+        days_to_fetch = config.get("days_to_fetch", 7)
+        enable_gmail = config.get("enable_gmail", True)
         custom_message = config.get("custom_message", "Synthia is on")
-        gmail_client_id = config.get("gmail_client_id", "")
-        gmail_client_secret = config.get("gmail_client_secret", "")
-        gmail_refresh_token = config.get("gmail_refresh_token", "")
+        
+        # Load Gmail Credentials
+        gmail_config = config.get("gmail", {})
+        gmail_client_id = gmail_config.get("client_id", "")
+        gmail_client_secret = gmail_config.get("client_secret", "")
+        gmail_refresh_token = gmail_config.get("refresh_token", "")
 except Exception as e:
     logging.error(f"Failed to load configuration: {e}")
     log_interval = 10
-    fetch_interval = 60
+    fetch_interval = 600  # Default 10 minutes
+    days_to_fetch = 7
+    enable_gmail = True
     custom_message = "Synthia is on"
     gmail_client_id = ""
     gmail_client_secret = ""
@@ -49,7 +57,11 @@ def authenticate_gmail():
     return build("gmail", "v1", credentials=creds)
 
 def fetch_unread_email_count():
-    """Fetch the total number of unread emails using pagination."""
+    """Fetch the total number of unread emails within the configured date range."""
+    if not enable_gmail:
+        logging.info("Gmail fetching is disabled.")
+        return
+
     logging.info("Checking for unread emails...")
     service = authenticate_gmail()
 
@@ -61,11 +73,15 @@ def fetch_unread_email_count():
         total_unread = 0
         next_page_token = None
 
+        # Define the date range filter
+        date_since = (datetime.utcnow() - timedelta(days=days_to_fetch)).strftime("%Y/%m/%d")
+        query = f"is:unread after:{date_since}"
+
         while True:
             results = service.users().messages().list(
                 userId="me",
                 labelIds=["INBOX"],
-                q="is:unread",
+                q=query,
                 maxResults=500,  # Fetch in batches of 500
                 pageToken=next_page_token
             ).execute()
@@ -78,7 +94,7 @@ def fetch_unread_email_count():
             if not next_page_token:
                 break  # Exit loop when all emails are counted
 
-        logging.info(f"📩 You have {total_unread} unread emails.")
+        logging.info(f"📩 You have {total_unread} unread emails from the last {days_to_fetch} days.")
 
     except Exception as e:
         logging.error(f"Error fetching emails: {e}")
@@ -94,7 +110,7 @@ if __name__ == "__main__":
         logging.info(custom_message)
         time.sleep(log_interval)
 
-        # Fetch unread email count at the defined interval
-        if current_time - last_fetch_time >= fetch_interval:
+        # Fetch unread email count at the defined interval (if enabled)
+        if enable_gmail and (current_time - last_fetch_time >= fetch_interval):
             fetch_unread_email_count()
             last_fetch_time = current_time

@@ -1,6 +1,6 @@
 {
   "name": "Synthia - AI Personal Assistant",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "slug": "synthia",
   "description": "A personal AI assistant for Home Assistant.",
   "startup": "application",
@@ -8,18 +8,26 @@
   "arch": ["amd64", "armv7", "armhf"],
   "options": {
     "log_interval": 10,
-    "fetch_interval": 60,
+    "fetch_interval_minutes": 10,
+    "days_to_fetch": 7,
+    "enable_gmail": true,
     "custom_message": "Synthia is on",
-    "gmail_client_id": "",
-    "gmail_client_secret": "",
-    "gmail_refresh_token": ""
+    "gmail": {
+      "client_id": "",
+      "client_secret": "",
+      "refresh_token": ""
+    }
   },
   "schema": {
     "log_interval": "int",
-    "fetch_interval": "int",
+    "fetch_interval_minutes": "int",
+    "days_to_fetch": "int",
+    "enable_gmail": "bool",
     "custom_message": "str",
-    "gmail_client_id": "str",
-    "gmail_client_secret": "str",
-    "gmail_refresh_token": "str"
+    "gmail": {
+      "client_id": "str",
+      "client_secret": "str",
+      "refresh_token": "str"
+    }
   }
 }
