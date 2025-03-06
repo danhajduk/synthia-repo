@@ -1,41 +1,38 @@
 from flask import Flask, render_template, jsonify
-import json
+import sqlite3
 import os
-from datetime import datetime, timedelta
 
 app = Flask(__name__, template_folder="/app/templates")
 
-CONFIG_PATH = "/data/options.json"
-DATA_FILE = "/data/email_data.json"
+DB_PATH = "/config/home-assistant_v2.db"
 
-def load_email_data():
-    """Load the last email fetch data and sort senders by email count."""
-    try:
-        if not os.path.exists(DATA_FILE):
-            return {"unread_count": 0, "last_fetch": "Never", "senders": {}}
-        with open(DATA_FILE, "r") as f:
-            email_data = json.load(f)
-        
-        # Sort senders by email count (highest to lowest)
-        email_data["senders"] = dict(sorted(email_data.get("senders", {}).items(), key=lambda item: item[1], reverse=True))
-        return email_data
-    except json.JSONDecodeError:
-        return {"unread_count": 0, "last_fetch": "Never", "senders": {}}
+def get_email_data():
+    """Retrieve latest email summary from HA database."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT sender, SUM(email_count) as total_emails
+        FROM synthia_emails
+        GROUP BY sender
+        ORDER BY total_emails DESC
+    ''')
+
+    data = cursor.fetchall()
+    conn.close()
+    
+    return {sender: count for sender, count in data}
 
 @app.route("/")
 def index():
     """Render the web UI."""
-    email_data = load_email_data()
-    return render_template("index.html",
-                           unread_count=email_data["unread_count"],
-                           last_fetch=email_data["last_fetch"],
-                           cutoff_date="Unknown",
-                           senders=email_data.get("senders", {}))
+    email_data = get_email_data()
+    return render_template("index.html", senders=email_data)
 
 @app.route("/api/status")
 def status():
     """Return JSON data for the web UI."""
-    email_data = load_email_data()
+    email_data = get_email_data()
     return jsonify(email_data)
 
 if __name__ == "__main__":
