@@ -135,7 +135,7 @@ def toggle_debug():
 @app.route('/get_debug_state', methods=['GET'])
 def get_debug_state():
     try:
-        with open("/app/config.yaml", "r") as f):
+        with open("/app/config.yaml", "r") as f:
             config = yaml.safe_load(f)
         debug = config['general'].get('debug', False)
         return jsonify({"debug": debug})
