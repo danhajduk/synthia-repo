@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.15i] - 2025-03-07
+### Added
+- Updated version in configuration files.
+- Fix DB type error
+
 ## [0.0.15h] - 2025-03-07
 ### Added
 - Reintroduced `config.json` and updated the version.

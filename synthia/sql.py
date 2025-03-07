@@ -198,7 +198,7 @@ def get_email_data():
 
             for row in rows:
                 sender = row[1]
-                count = row[2]
+                count = row[2] if row[2] is not None else 0  # Handle NoneType values
                 senders[sender] = senders.get(sender, 0) + count
 
             logging.info(f"📩 Data sent to UI: unread_count={unread_count}, senders={json.dumps(senders, indent=2)}")
