@@ -10,9 +10,11 @@ app = Flask(__name__, template_folder="/app/templates")
 # Enable logging for debugging
 logging.basicConfig(level=logging.INFO)
 
+fetching = False  # Track if emails are being fetched
+
 
 def get_current_version():
-    """Get the current version from config.json"""
+    """Get the current version from options.json"""
     try:
         with open("/data/options.json", "r") as f:
             return json.load(f).get("version", "Unknown")
@@ -41,10 +43,19 @@ def settings():
     return render_template("settings.html")
 
 
+@app.route("/fetch_status")
+def fetch_status():
+    """Return the current email fetching status."""
+    status = "📩 Fetching emails..." if fetching else "✅ Ready"
+    return jsonify({"status": status})
+
+
 @app.route("/clear_and_refresh", methods=["POST"])
 def clear_and_refresh():
     """Clear email table and fetch new emails."""
+    global fetching
     try:
+        fetching = True  # Set status to fetching
         sql.clear_email_table()
         emails = gmail.fetch_unread_emails()
 
@@ -59,6 +70,8 @@ def clear_and_refresh():
     except Exception as e:
         logging.error(f"❌ Error clearing and refreshing emails: {e}")
         return jsonify({"message": "Error occurred."}), 500
+    finally:
+        fetching = False  # Reset fetching status
 
 
 @app.route("/check_update", methods=["POST"])
@@ -71,7 +84,7 @@ def check_update():
 
 
 def run():
-    """Run the Flask web server on Ingress port 5000."""
+    """Run the Flask web server on port 5000."""
     logging.info("🚀 Starting Flask web server on port 5000")
     app.run(host="0.0.0.0", port=5000, debug=False)
 

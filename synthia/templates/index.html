@@ -71,6 +71,14 @@
             text-align: center;
         }
 
+        /* Email Fetching Status */
+        .fetching-container {
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+            margin-top: 10px;
+        }
+
         /* Email Summary Cards */
         .summary {
             display: flex;
@@ -144,6 +152,11 @@
         Version: <strong>{{ version }}</strong>
     </div>
 
+    <!-- Fetching Status -->
+    <div class="fetching-container">
+        <p id="fetch-status">📩 <span>Ready</span></p>
+    </div>
+
     <!-- Main Content -->
     <div class="container">
         <h2>Email Summary</h2>
@@ -179,5 +192,19 @@
             </ul>
         </div>
     </div>
+
+    <script>
+        function checkFetchingStatus() {
+            fetch('/fetch_status')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("fetch-status").innerHTML = data.status;
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        // Refresh status every 5 seconds
+        setInterval(checkFetchingStatus, 5000);
+    </script>
 </body>
 </html>
