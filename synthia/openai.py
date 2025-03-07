@@ -53,7 +53,8 @@ def generate_response(prompt):
     data = {
         "model": "text-davinci-003",
         "prompt": prompt,
-        "max_tokens": 150
+        "max_tokens": 150,
+        "temperature": 0.7
     }
 
     try:
@@ -61,6 +62,9 @@ def generate_response(prompt):
         response.raise_for_status()
         result = response.json()
         return result["choices"][0]["text"].strip()
+    except requests.exceptions.HTTPError as e:
+        logging.error(f"❌ HTTP error generating response from OpenAI: {e}")
+        return "HTTP error generating response from OpenAI."
     except Exception as e:
         logging.error(f"❌ Error generating response from OpenAI: {e}")
         return "Error generating response from OpenAI."
@@ -105,7 +109,7 @@ def identify_important_senders():
     # Save the identified important senders to the database
     for sender in important_senders:
         if sender.strip():
-            sql.add_important_sender(sender.strip(), category="Important")
+            sql.add_important_sender(sender.strip())  # Removed 'category' argument
 
     logging.info(f"✅ Identified important senders: {important_senders}")
     return important_senders

@@ -53,7 +53,8 @@ def connect_db():
         ''')
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS synthia_important_senders (
-                sender TEXT PRIMARY KEY
+                sender TEXT PRIMARY KEY,
+                category TEXT
             )
         ''')
         conn.commit()
@@ -99,7 +100,8 @@ def create_table():
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS synthia_important_senders (
-            sender TEXT PRIMARY KEY
+            sender TEXT PRIMARY KEY,
+            category TEXT
         )
     ''')
     conn.commit()
@@ -329,26 +331,27 @@ def set_metadata(key, value):
         conn.close()
         logging.info("🔒 Database connection closed.")
 
-def add_important_sender(sender):
+def add_important_sender(sender, category="Important"):
     """
-    Add a sender to the important senders list.
+    Add a sender to the important senders list with a category.
 
     Args:
         sender (str): The email address of the sender to add.
+        category (str): The category of the sender (Important/Ignored/Muted).
     """
-    logging.info(f"➕ Adding important sender: {sender}")
+    logging.info(f"➕ Adding important sender: {sender} with category: {category}")
 
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO synthia_important_senders (sender)
-            VALUES (?)
-            ON CONFLICT(sender) DO NOTHING
-        ''', (sender,))
+            INSERT INTO synthia_important_senders (sender, category)
+            VALUES (?, ?)
+            ON CONFLICT(sender) DO UPDATE SET category = excluded.category
+        ''', (sender, category))
         conn.commit()
         conn.close()
-        logging.info(f"✅ Important sender added: {sender}")
+        logging.info(f"✅ Important sender added: {sender} with category: {category}")
 
     except sqlite3.Error as e:
         logging.error(f"❌ Database error while adding important sender: {e}")
