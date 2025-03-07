@@ -147,6 +147,9 @@ def save_email_data(emails):
 
         conn.commit()
         logging.info("✅ Email data successfully saved.")
+        cursor.execute("SELECT COUNT(*) FROM synthia_emails")
+        count = cursor.fetchone()[0]
+        logging.info(f"📊 Total emails in database: {count}")
 
     except sqlite3.Error as e:
         logging.error(f"❌ Database error while saving email data: {e}")
