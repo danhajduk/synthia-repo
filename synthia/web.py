@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 import logging
-import yaml
+import json
 import sql
 import gmail
 import update  # Import the update script
@@ -14,10 +14,10 @@ fetching = False  # Track if emails are being fetched
 
 
 def get_current_version():
-    """Get the current version from config.yaml"""
+    """Get the current version from config.json"""
     try:
-        with open("/app/config.yaml", "r") as f:
-            config = yaml.safe_load(f)
+        with open("/app/config.json", "r") as f:
+            config = json.load(f)
             return config.get("version", "Unknown")
     except Exception as e:
         logging.error(f"Error reading version: {e}")

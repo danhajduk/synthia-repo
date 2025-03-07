@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.0.15d] - 2025-03-07
+## [0.0.15h] - 2025-03-07
+### Added
+- Reintroduced `config.json` and updated the version.
+- Updated `web.py` to read version from `config.json` and display it in the UI.
+
+## [0.0.15g] - 2025-03-07
 ### Added
 - Added detailed logging to `save_email_data` function.
 - Added button in settings page to delete and recreate the email table.
@@ -21,4 +26,3 @@
 - Update mechanism to fetch the latest version from GitHub releases and update the configuration.
 - Detailed logging for debugging and monitoring.
 
-  
