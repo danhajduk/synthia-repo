@@ -153,3 +153,15 @@ def delete_read_emails():
     conn.commit()
     conn.close()
     logging.info("Read emails deleted from the database.")
+
+def recreate_table():
+    """Drop and recreate the email table."""
+    conn = connect_db()
+    if conn is None:
+        logging.error("Could not establish database connection.")
+        return
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS synthia_emails")
+    conn.commit()
+    create_table()
+    logging.info("Table 'synthia_emails' recreated.")
