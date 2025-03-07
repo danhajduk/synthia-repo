@@ -1,11 +1,14 @@
 # Changelog
 
-## [0.0.16] - 2025-03-07
+## [0.0.17] - 2025-03-08
 ### Added
 - Added dynamic updates to the email summary and fetch status on the index page using JavaScript.
 - Added `/email_summary` endpoint to provide email summary data for dynamic updates.
 - Updated `fetch_unread_emails` function to change `fetch_status` in the metadata table.
 - Updated `web.py` to use the metadata table to get the fetch status.
+
+## [0.0.16] - 2025-03-07
+### Added
 - Modified database structure to include `recipient`, `subject`, and `unread_count` fields.
 - Added `synthia_email_summary` and `synthia_safe_senders` tables.
 - Added debug logging and debug switch to the configuration.

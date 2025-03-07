@@ -6,6 +6,7 @@ import gmail
 import update  # Import the update script
 import yaml  # Import yaml module
 import datetime  # Import datetime module
+import threading  # Import threading for periodic fetching
 
 app = Flask(__name__, template_folder="/app/templates")
 
@@ -105,7 +106,7 @@ def clear_and_refresh():
 def check_update():
     """Check for updates and restart if needed."""
     latest_version = update.get_latest_version()
-    if latest_version and update.update_config(latest_version):
+    if (latest_version and update.update_config(latest_version)):
         return jsonify({"message": f"Updated to {latest_version}, restarting..."})
     return jsonify({"message": "Already up to date."})
 
@@ -134,16 +135,32 @@ def toggle_debug():
 @app.route('/get_debug_state', methods=['GET'])
 def get_debug_state():
     try:
-        with open("/app/config.yaml", "r") as f:
+        with open("/app/config.yaml", "r") as f):
             config = yaml.safe_load(f)
         debug = config['general'].get('debug', False)
         return jsonify({"debug": debug})
     except Exception as e:
         return jsonify({"message": f"Error retrieving debug state: {e}"}), 500
 
+def periodic_fetch():
+    """Periodically fetch emails and synchronize the database."""
+    while True:
+        try:
+            logging.info("⏳ Periodic fetch started.")
+            emails = gmail.fetch_unread_emails()
+            sql.save_email_data(emails)
+            sql.set_metadata("last_fetch", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            sql.set_metadata("cutoff_date", (datetime.datetime.now() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
+            logging.info("✅ Periodic fetch completed.")
+        except Exception as e:
+            logging.error(f"❌ Error during periodic fetch: {e}")
+        finally:
+            time.sleep(600)  # Fetch every 10 minutes
+
 def run():
     """Run the Flask web server on port 5000."""
     logging.info("🚀 Starting Flask web server on port 5000")
+    threading.Thread(target=periodic_fetch, daemon=True).start()
     app.run(host="0.0.0.0", port=5000, debug=False)
 
 if __name__ == "__main__":

@@ -102,6 +102,17 @@ def fetch_unread_emails():
 
         logging.info(f"📊 Processed {len(emails)} emails.")
         logging.debug(f"Emails: {emails}")
+
+        # Update the database with the fetched emails
+        sql.save_email_data(emails)
+
+        # Mark emails as read if they are no longer unread
+        for email_id in emails.keys():
+            sql.update_email_status(email_id, 0)
+
+        # Delete read emails from the database
+        sql.delete_read_emails()
+
         sql.set_metadata("fetch_status", "✅ Ready")
         return emails
 
