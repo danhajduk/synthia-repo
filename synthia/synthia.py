@@ -29,12 +29,10 @@ def main_loop():
     """Main loop to check and save emails."""
     while True:
         logging.info("Checking for unread emails...")
+        sql.check_table_structure()  # Ensure the table structure is correct
         emails = gmail.fetch_unread_emails()
         if emails:
-            sender_counts = {}
-            for email in emails:
-                sender_counts[email] = sender_counts.get(email, 0) + 1
-            sql.save_email_data(len(emails), sender_counts)
+            sql.save_email_data(emails)
             logging.info("Email data successfully saved to Synthia's database.")
         else:
             logging.info("No new emails found.")

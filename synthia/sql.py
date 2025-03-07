@@ -18,7 +18,10 @@ def connect_db():
                 timestamp TEXT,
                 unread_count INTEGER,
                 sender TEXT,
-                email_count INTEGER
+                email_count INTEGER,
+                email_id TEXT UNIQUE,
+                analyzed BOOLEAN DEFAULT 0,
+                category TEXT DEFAULT 'unknown'
             )
         ''')
         conn.commit()
@@ -27,6 +30,59 @@ def connect_db():
     except sqlite3.OperationalError as e:
         logging.error(f"❌ Database connection failed: {e}")
         return None
+
+def check_table_structure():
+    """Check if the table structure is correct and recreate it if necessary."""
+    conn = connect_db()
+    if conn is None:
+        logging.error("Could not establish database connection.")
+        return
+
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(synthia_emails)")
+    columns = cursor.fetchall()
+    expected_columns = {
+        "id": "INTEGER",
+        "timestamp": "TEXT",
+        "unread_count": "INTEGER",
+        "sender": "TEXT",
+        "email_count": "INTEGER",
+        "email_id": "TEXT",
+        "analyzed": "BOOLEAN",
+        "category": "TEXT"
+    }
+
+    # Check if all expected columns are present and have the correct type
+    for column in columns:
+        name, col_type = column[1], column[2]
+        if name not in expected_columns or expected_columns[name] != col_type:
+            logging.warning(f"Column {name} has incorrect type {col_type}. Expected {expected_columns[name]}.")
+            break
+    else:
+        logging.info("Table structure is correct.")
+        conn.close()
+        return
+
+    # If the structure is incorrect, drop and recreate the table
+    logging.warning("Table structure is incorrect. Recreating table.")
+    cursor.execute("DROP TABLE IF EXISTS synthia_emails")
+    conn.commit()
+    cursor.execute('''
+        CREATE TABLE synthia_emails (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            unread_count INTEGER,
+            sender TEXT,
+            email_count INTEGER,
+            email_id TEXT UNIQUE,
+            analyzed BOOLEAN DEFAULT 0,
+            category TEXT DEFAULT 'unknown'
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    logging.info("Table 'synthia_emails' recreated.")
+
 def create_table():
     """Create table in Synthia's database if it doesn't exist."""
     conn = connect_db()
@@ -40,12 +96,16 @@ def create_table():
             timestamp TEXT,
             unread_count INTEGER,
             sender TEXT,
-            email_count INTEGER
+            email_count INTEGER,
+            email_id TEXT UNIQUE,
+            analyzed BOOLEAN DEFAULT 0,
+            category TEXT DEFAULT 'unknown'
         )
     ''')
     conn.commit()
     conn.close()
     logging.info("Table 'synthia_emails' created or already exists.")
+    check_table_structure()
 
 def clear_email_table():
     """Clear the email table to reset data."""
@@ -59,22 +119,31 @@ def clear_email_table():
     conn.close()
     logging.info("Email table cleared.")
 
-def save_email_data(unread_count, sender_counts):
+def email_exists(email_id):
+    """Check if an email with the given ID already exists in the database."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM synthia_emails WHERE email_id = ?", (email_id,))
+    exists = cursor.fetchone() is not None
+    conn.close()
+    return exists
+
+def save_email_data(emails):
     """Save unread email count & sender counts to Synthia's database."""
     logging.info("💾 Saving email data to the database...")
-    logging.info(f"📩 Unread Emails: {unread_count}")
-    logging.info(f"📨 Sender Counts: {json.dumps(sender_counts, indent=2)}")
-
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     try:
-        for sender, count in sender_counts.items():
-            logging.info(f"🔹 Inserting: Sender={sender}, Emails={count}")
-            cursor.execute('''
-                INSERT INTO synthia_emails (timestamp, unread_count, sender, email_count)
-                VALUES (datetime('now'), ?, ?, ?)
-            ''', (unread_count, sender, count))
+        for email_id, sender in emails.items():
+            if not email_exists(email_id):
+                logging.info(f"🔹 Inserting: EmailID={email_id}, Sender={sender}")
+                cursor.execute('''
+                    INSERT INTO synthia_emails (timestamp, email_id, sender, analyzed, category)
+                    VALUES (datetime('now'), ?, ?, 0, 'unknown')
+                ''', (email_id, sender))
+            else:
+                logging.info(f"🔹 Skipping already stored email: EmailID={email_id}")
 
         conn.commit()
         logging.info("✅ Email data successfully saved.")
@@ -105,7 +174,10 @@ def get_email_data():
                 timestamp TEXT,
                 unread_count INTEGER,
                 sender TEXT,
-                email_count INTEGER
+                email_count INTEGER,
+                email_id TEXT UNIQUE,
+                analyzed BOOLEAN DEFAULT 0,
+                category TEXT DEFAULT 'unknown'
             )
         """)
         conn.commit()

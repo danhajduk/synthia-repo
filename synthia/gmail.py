@@ -61,7 +61,7 @@ def fetch_unread_emails():
         gmail_query = f"is:unread after:{past_week}"
         logging.info(f"📅 Fetching emails from: {past_week}")
 
-        sender_counts = {}
+        emails = {}
         next_page_token = None
 
         while True:
@@ -80,18 +80,15 @@ def fetch_unread_emails():
                 msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
                 headers = msg_data.get("payload", {}).get("headers", [])
 
-                subject = next((h["value"] for h in headers if h["name"] == "Subject"), "No Subject")
                 sender = next((h["value"] for h in headers if h["name"] == "From"), "Unknown Sender")
-
-                logging.info(f"📨 Email Fetched: Sender={sender}, Subject={subject}")
-                sender_counts[sender] = sender_counts.get(sender, 0) + 1
+                emails[msg["id"]] = sender
 
             next_page_token = results.get("nextPageToken")
             if not next_page_token:
                 break  # No more pages, exit loop
 
-        logging.info(f"📊 Processed {len(sender_counts)} unique senders.")
-        return sender_counts
+        logging.info(f"📊 Processed {len(emails)} emails.")
+        return emails
 
     except Exception as e:
         error_message = str(e).lower()
