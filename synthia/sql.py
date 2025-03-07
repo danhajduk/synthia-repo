@@ -33,6 +33,12 @@ TABLES = {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             sender TEXT UNIQUE
         )
+    ''',
+    "synthia_metadata": '''
+        CREATE TABLE IF NOT EXISTS synthia_metadata (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
     '''
 }
 
@@ -52,6 +58,10 @@ EXPECTED_COLUMNS = {
         "id": "INTEGER",
         "sender": "TEXT",
         "email_count": "INTEGER"
+    },
+    "synthia_metadata": {
+        "key": "TEXT",
+        "value": "TEXT"
     }
 }
 
@@ -226,3 +236,47 @@ def get_email_data():
     except Exception as e:
         logging.error(f"❌ Unexpected error: {e}")
         return {}
+
+def recreate_table():
+    """Drop and recreate the email tables."""
+    conn = connect_db()
+    if conn is None:
+        logging.error("Could not establish database connection.")
+        return
+    cursor = conn.cursor()
+    for table_name in TABLES.keys():
+        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    conn.commit()
+    for table_sql in TABLES.values():
+        cursor.execute(table_sql)
+    conn.commit()
+    conn.close()
+    logging.info("Tables recreated.")
+
+def get_metadata(key):
+    """Retrieve a metadata value from the database."""
+    conn = connect_db()
+    if conn is None:
+        logging.error("Could not establish database connection.")
+        return None
+    cursor = conn.cursor()
+    cursor.execute("SELECT value FROM synthia_metadata WHERE key = ?", (key,))
+    result = cursor.fetchone()
+    conn.close()
+    return result[0] if result else None
+
+def set_metadata(key, value):
+    """Set a metadata value in the database."""
+    conn = connect_db()
+    if conn is None:
+        logging.error("Could not establish database connection.")
+        return
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO synthia_metadata (key, value)
+        VALUES (?, ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value
+    ''', (key, value))
+    conn.commit()
+    conn.close()
+    logging.info(f"Metadata {key} set to {value}.")

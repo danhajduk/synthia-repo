@@ -13,4 +13,5 @@
 - Fixed SQL syntax issues to ensure proper table creation.
 - Added `email_count` column to the expected columns in `check_table_structure`.
 - Defined table structures and expected columns as variables in `sql.py`.
+- Added `UNIQUE` constraint to the `sender` column in the `synthia_email_summary` table.
 

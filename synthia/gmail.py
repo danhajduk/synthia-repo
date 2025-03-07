@@ -4,6 +4,7 @@ import json
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+import sql  # Import sql module to update metadata
 
 # Gmail API Scope
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -51,10 +52,12 @@ def authenticate_gmail():
 def fetch_unread_emails():
     """Fetch unread emails from Gmail from the last 7 days."""
     logging.info("📥 Fetching unread emails from Gmail...")
+    sql.set_metadata("fetch_status", "📩 Fetching emails...")
 
     service = authenticate_gmail()
     if not service:
         logging.error("❌ Failed to authenticate with Gmail API.")
+        sql.set_metadata("fetch_status", "❌ Failed to authenticate with Gmail API.")
         return {}
 
     try:
@@ -99,14 +102,18 @@ def fetch_unread_emails():
 
         logging.info(f"📊 Processed {len(emails)} emails.")
         logging.debug(f"Emails: {emails}")
+        sql.set_metadata("fetch_status", "✅ Ready")
         return emails
 
     except Exception as e:
         error_message = str(e).lower()
         if "invalid_client" in error_message:
             logging.error("❌ Invalid OAuth client: Check your Client ID and Secret in Google Cloud.")
+            sql.set_metadata("fetch_status", "❌ Invalid OAuth client.")
         elif "quotaExceeded" in error_message:
             logging.error("❌ Gmail API quota exceeded. Try again later.")
+            sql.set_metadata("fetch_status", "❌ Gmail API quota exceeded.")
         else:
             logging.error(f"❌ Unexpected error fetching emails: {e}")
+            sql.set_metadata("fetch_status", f"❌ Unexpected error: {e}")
         return {}

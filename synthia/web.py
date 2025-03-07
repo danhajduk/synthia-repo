@@ -5,6 +5,7 @@ import sql
 import gmail
 import update  # Import the update script
 import yaml  # Import yaml module
+import datetime  # Import datetime module
 
 app = Flask(__name__, template_folder="/app/templates")
 
@@ -12,7 +13,6 @@ app = Flask(__name__, template_folder="/app/templates")
 logging.basicConfig(level=logging.DEBUG)
 
 fetching = False  # Track if emails are being fetched
-
 
 def get_current_version():
     """Get the current version from config.json"""
@@ -24,12 +24,10 @@ def get_current_version():
         logging.error(f"Error reading version: {e}")
         return "Unknown"
 
-
 @app.before_request
 def log_request():
     """Log all incoming requests for debugging."""
     logging.info(f"📥 Received request: {request.method} {request.path} from {request.remote_addr}")
-
 
 @app.route("/")
 def index():
@@ -39,12 +37,14 @@ def index():
     try:
         senders = sql.get_email_data()
         unread_count = sum(senders.values())
+        last_fetch = sql.get_metadata("last_fetch") or "N/A"
+        cutoff_date = sql.get_metadata("cutoff_date") or "N/A"
     except Exception as e:
         logging.error(f"❌ Error retrieving email data: {e}")
         unread_count, senders = 0, {}
+        last_fetch, cutoff_date = "N/A", "N/A"
 
-    return render_template("index.html", version=get_current_version(), unread_count=unread_count, senders=senders)
-
+    return render_template("index.html", version=get_current_version(), unread_count=unread_count, senders=senders, last_fetch=last_fetch, cutoff_date=cutoff_date)
 
 @app.route("/settings")
 def settings():
@@ -52,13 +52,11 @@ def settings():
     logging.info("✅ Rendering settings.html")
     return render_template("settings.html")
 
-
 @app.route("/fetch_status")
 def fetch_status():
     """Return the current email fetching status."""
-    status = "📩 Fetching emails..." if fetching else "✅ Ready"
+    status = sql.get_metadata("fetch_status") or "✅ Ready"
     return jsonify({"status": status})
-
 
 @app.route("/clear_and_refresh", methods=["POST"])
 def clear_and_refresh():
@@ -69,7 +67,9 @@ def clear_and_refresh():
         sql.clear_email_table()
         emails = gmail.fetch_unread_emails()
         sql.save_email_data(emails)  # Pass the emails dictionary
- 
+        sql.set_metadata("last_fetch", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        sql.set_metadata("cutoff_date", (datetime.datetime.now() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
+
         logging.info("✅ Database cleared & emails refreshed.")
         return jsonify({"message": "Database cleared & emails refreshed."})
     except Exception as e:
@@ -77,7 +77,6 @@ def clear_and_refresh():
         return jsonify({"message": "Error occurred."}), 500
     finally:
         fetching = False  # Reset fetching status
-
 
 @app.route("/check_update", methods=["POST"])
 def check_update():
@@ -87,7 +86,6 @@ def check_update():
         return jsonify({"message": f"Updated to {latest_version}, restarting..."})
     return jsonify({"message": "Already up to date."})
 
-
 @app.route('/recreate_table', methods=['POST'])
 def recreate_table():
     try:
@@ -95,7 +93,6 @@ def recreate_table():
         return jsonify({"message": "Email table recreated successfully."})
     except Exception as e:
         return jsonify({"message": f"Error recreating table: {e}"}), 500
-
 
 @app.route('/toggle_debug', methods=['POST'])
 def toggle_debug():
@@ -111,7 +108,6 @@ def toggle_debug():
     except Exception as e:
         return jsonify({"message": f"Error updating debug state: {e}"}), 500
 
-
 @app.route('/get_debug_state', methods=['GET'])
 def get_debug_state():
     try:
@@ -122,12 +118,10 @@ def get_debug_state():
     except Exception as e:
         return jsonify({"message": f"Error retrieving debug state: {e}"}), 500
 
-
 def run():
     """Run the Flask web server on port 5000."""
     logging.info("🚀 Starting Flask web server on port 5000")
     app.run(host="0.0.0.0", port=5000, debug=False)
-
 
 if __name__ == "__main__":
     run()
