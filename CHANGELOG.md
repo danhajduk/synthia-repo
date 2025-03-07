@@ -1,13 +1,16 @@
 # Changelog
 
+## [0.0.16] - 2025-03-07
+### Added
+- Modified database structure to include `recipient` and `subject` fields.
+- Added `synthia_email_summary` and `synthia_safe_senders` tables.
+
 ## [0.0.15k] - 2025-03-07
 ### Added
-- Updated version in configuration files.
 - Fixed email count increments.
 
 ## [0.0.15i] - 2025-03-07
 ### Added
-- Updated version in configuration files.
 - Fix DB type error
 
 ## [0.0.15h] - 2025-03-07
@@ -20,7 +23,6 @@
 - Added detailed logging to `save_email_data` function.
 - Added button in settings page to delete and recreate the email table.
 - Ensured correct number of arguments are passed to `save_email_data` function.
-- Updated version in configuration files.
 - Removed `config.json` and ensured all references are updated to use `config.yaml`.
 - Updated `web.py` to read version from `config.yaml` and display it in the UI.
 

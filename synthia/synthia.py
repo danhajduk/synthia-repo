@@ -4,24 +4,30 @@ import os
 import sql
 import gmail
 import web
+import yaml
+
+# Load configuration
+with open("/app/config.yaml", "r") as f:
+    config = yaml.safe_load(f)
 
 # Configure Logging
+log_level = logging.DEBUG if config["general"].get("debug", False) else logging.INFO
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
-    level=logging.INFO
+    level=log_level
 )
 
 def log_directory_structure():
     """Log the directory structure for debugging."""
-    logging.info(f"Current working directory: {os.getcwd()}")
+    logging.debug(f"Current working directory: {os.getcwd()}")
 
     directories = ["/", "/app", "/data"]
     for directory in directories:
-        logging.info(f"Listing files in {directory}:")
+        logging.debug(f"Listing files in {directory}:")
         try:
             for item in os.listdir(directory):
                 full_path = os.path.join(directory, item)
-                logging.info(f" - {full_path} ({'DIR' if os.path.isdir(full_path) else 'FILE'})")
+                logging.debug(f" - {full_path} ({'DIR' if os.path.isdir(full_path) else 'FILE'})")
         except Exception as e:
             logging.error(f"Could not list {directory}: {e}")
 

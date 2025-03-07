@@ -14,6 +14,7 @@ def load_gmail_config():
         with open("/data/options.json", "r") as f:
             config = json.load(f)
         logging.info("✅ Gmail configuration successfully loaded.")
+        logging.debug(f"Loaded config: {config}")
         return config["gmail"]
     except Exception as e:
         logging.error(f"❌ Failed to load Gmail configuration: {e}")
@@ -41,6 +42,7 @@ def authenticate_gmail():
 
         service = build("gmail", "v1", credentials=creds)
         logging.info("✅ Gmail service built successfully.")
+        logging.debug(f"Service: {service}")
         return service
     except Exception as e:
         logging.error(f"❌ Failed to authenticate with Gmail API: {e}")
@@ -75,10 +77,12 @@ def fetch_unread_emails():
 
             messages = results.get("messages", [])
             logging.info(f"📨 {len(messages)} emails fetched (page).")
+            logging.debug(f"Messages: {messages}")
 
             for msg in messages:
                 msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
                 headers = msg_data.get("payload", {}).get("headers", [])
+                logging.debug(f"Message data: {msg_data}")
 
                 sender = next((h["value"] for h in headers if h["name"] == "From"), "Unknown Sender")
                 if sender in emails:
@@ -91,6 +95,7 @@ def fetch_unread_emails():
                 break  # No more pages, exit loop
 
         logging.info(f"📊 Processed {len(emails)} emails.")
+        logging.debug(f"Emails: {emails}")
         return emails
 
     except Exception as e:
