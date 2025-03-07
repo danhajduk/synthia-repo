@@ -182,10 +182,15 @@ def save_email_data(emails):
 
     try:
         for email_id, email_data in emails.items():
-            sender = email_data['sender']
-            recipient = email_data['recipient']
-            subject = email_data['subject']
+            if not isinstance(email_data, dict):
+                logging.error(f"Unexpected data format for email_id {email_id}: {email_data}")
+                continue
+
+            sender = email_data.get('sender', 'Unknown Sender')
+            recipient = email_data.get('recipient', 'Unknown Recipient')
+            subject = email_data.get('subject', 'No Subject')
             unread_count = email_data.get('unread_count', 1)  # Default to 1 if not provided
+
             if not email_exists(email_id):
                 logging.debug(f"🔹 Inserting: EmailID={email_id}, Sender={sender}")
                 cursor.execute('''

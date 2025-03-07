@@ -9,6 +9,7 @@
 - Added check to ensure the `general` key exists in the configuration.
 - Added debug switch to the settings page and routes to get and toggle the debug state.
 - Added debug switch to `config.json`.
+- Added debugging logs to identify and fix the issue with saving email data.
 
 ## [0.0.15k] - 2025-03-07
 ### Added
