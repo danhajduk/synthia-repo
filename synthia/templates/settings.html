@@ -85,6 +85,7 @@
             margin-left: 10px;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="menu">
@@ -96,10 +97,13 @@
         <button class="clear-button" onclick="clearAndRefresh()">Clear & Refresh Emails</button>
         <button class="update-button" onclick="checkForUpdate()">Check for Updates</button>
         <button class="recreate-button" onclick="recreateTable()">Recreate Email Table</button>
+        <button id="check_senders_openai">Check Senders in OpenAI</button>
         <div class="debug-switch">
             <label for="debug">Enable Debug Logging</label>
             <input type="checkbox" id="debug" onchange="toggleDebug(this)">
         </div>
+        <h2>Important Senders</h2>
+        <ul id="important_senders_list"></ul>
         <p id="status"></p>
     </div>
 
@@ -141,6 +145,30 @@
             .then(response => response.json())
             .then(data => document.getElementById('debug').checked = data.debug)
             .catch(error => console.error('Error:', error));
+
+        $(document).ready(function() {
+            // Fetch and display important senders
+            function fetchImportantSenders() {
+                $.getJSON("/important_senders", function(data) {
+                    var importantSendersList = $("#important_senders_list");
+                    importantSendersList.empty();
+                    data.important_senders.forEach(function(sender) {
+                        importantSendersList.append("<li>" + sender.sender + " (" + sender.category + ")</li>");
+                    });
+                });
+            }
+
+            // Check senders in OpenAI
+            $("#check_senders_openai").click(function() {
+                $.post("/check_senders_openai", function(data) {
+                    alert(data.message);
+                    fetchImportantSenders();
+                });
+            });
+
+            // Initial fetch of important senders
+            fetchImportantSenders();
+        });
     </script>
 </body>
 </html>

@@ -51,6 +51,11 @@ def connect_db():
                 email_count INTEGER
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS synthia_important_senders (
+                sender TEXT PRIMARY KEY
+            )
+        ''')
         conn.commit()
         logging.info(f"✅ Connected to database and ensured tables exist: {DB_PATH}")
         return conn
@@ -92,9 +97,14 @@ def create_table():
             email_count INTEGER
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS synthia_important_senders (
+            sender TEXT PRIMARY KEY
+        )
+    ''')
     conn.commit()
     conn.close()
-    logging.info("Tables 'synthia_unread_emails', 'synthia_metadata', and 'synthia_senders_summary' created or already exist.")
+    logging.info("Tables 'synthia_unread_emails', 'synthia_metadata', 'synthia_senders_summary', and 'synthia_important_senders' created or already exist.")
 
 def clear_email_table():
     """
@@ -248,9 +258,10 @@ def recreate_table():
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS synthia_unread_emails")
     cursor.execute("DROP TABLE IF EXISTS synthia_senders_summary")
+    cursor.execute("DROP TABLE IF EXISTS synthia_important_senders")
     conn.commit()
     create_table()
-    logging.info("Tables 'synthia_unread_emails' and 'synthia_senders_summary' recreated.")
+    logging.info("Tables 'synthia_unread_emails', 'synthia_senders_summary', and 'synthia_important_senders' recreated.")
 
 def get_metadata(key):
     """
@@ -317,3 +328,92 @@ def set_metadata(key, value):
     finally:
         conn.close()
         logging.info("🔒 Database connection closed.")
+
+def add_important_sender(sender):
+    """
+    Add a sender to the important senders list.
+
+    Args:
+        sender (str): The email address of the sender to add.
+    """
+    logging.info(f"➕ Adding important sender: {sender}")
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO synthia_important_senders (sender)
+            VALUES (?)
+            ON CONFLICT(sender) DO NOTHING
+        ''', (sender,))
+        conn.commit()
+        conn.close()
+        logging.info(f"✅ Important sender added: {sender}")
+
+    except sqlite3.Error as e:
+        logging.error(f"❌ Database error while adding important sender: {e}")
+
+    except Exception as e:
+        logging.error(f"❌ Unexpected error while adding important sender: {e}")
+
+    finally:
+        conn.close()
+        logging.info("🔒 Database connection closed.")
+
+def remove_important_sender(sender):
+    """
+    Remove a sender from the important senders list.
+
+    Args:
+        sender (str): The email address of the sender to remove.
+    """
+    logging.info(f"➖ Removing important sender: {sender}")
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            DELETE FROM synthia_important_senders
+            WHERE sender = ?
+        ''', (sender,))
+        conn.commit()
+        conn.close()
+        logging.info(f"✅ Important sender removed: {sender}")
+
+    except sqlite3.Error as e:
+        logging.error(f"❌ Database error while removing important sender: {e}")
+
+    except Exception as e:
+        logging.error(f"❌ Unexpected error while removing important sender: {e}")
+
+    finally:
+        conn.close()
+        logging.info("🔒 Database connection closed.")
+
+def get_important_senders():
+    """
+    Retrieve the list of important senders from the database.
+
+    Returns:
+        list: A list of important senders.
+    """
+    logging.info("📥 Fetching important senders from the database...")
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT sender FROM synthia_important_senders")
+        rows = cursor.fetchall()
+        conn.close()
+
+        important_senders = [row[0] for row in rows]
+        logging.info(f"🔎 Retrieved {len(important_senders)} important senders from database.")
+        return important_senders
+
+    except sqlite3.Error as e:
+        logging.error(f"❌ Database error: {e}")
+        return []
+
+    except Exception as e:
+        logging.error(f"❌ Unexpected error: {e}")
+        return []

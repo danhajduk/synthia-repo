@@ -13,6 +13,7 @@ import update  # Import the update script
 import yaml  # Import yaml module
 import datetime  # Import datetime module
 import threading  # Import threading for periodic fetching
+import openai  # Import the openai module
 
 app = Flask(__name__, template_folder="/app/templates")
 
@@ -202,6 +203,36 @@ def get_debug_state():
         return jsonify({"debug": debug})
     except Exception as e:
         return jsonify({"message": f"Error retrieving debug state: {e}"}), 500
+
+@app.route("/important_senders")
+def important_senders():
+    """
+    Return the list of important senders with their categories.
+
+    Returns:
+        json: JSON object containing the list of important senders.
+    """
+    try:
+        important_senders = sql.get_important_senders()
+        return jsonify({"important_senders": important_senders})
+    except Exception as e:
+        logging.error(f"❌ Error retrieving important senders: {e}")
+        return jsonify({"important_senders": []}), 500
+
+@app.route("/check_senders_openai", methods=["POST"])
+def check_senders_openai():
+    """
+    Check senders in OpenAI to identify important senders.
+
+    Returns:
+        json: JSON object containing the result message.
+    """
+    try:
+        important_senders = openai.identify_important_senders()
+        return jsonify({"message": "Important senders identified.", "important_senders": important_senders})
+    except Exception as e:
+        logging.error(f"❌ Error checking senders in OpenAI: {e}")
+        return jsonify({"message": "Error occurred while checking senders in OpenAI."}), 500
 
 def periodic_fetch():
     """
