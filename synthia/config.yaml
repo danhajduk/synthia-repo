@@ -8,10 +8,34 @@ arch:
   - armhf
 init: false
 options:
-  gmail_api_key: ""
-  openai_api_key: ""
-  notify_service: "notify.mobile_app_your_phone"
+  general:
+    log_interval: 10
+    fetch_interval_minutes: 10
+    days_to_fetch: 7
+    custom_message: "Synthia is on"
+  gmail:
+    enable_gmail: true
+    gmail_api_key: ""
+    client_id: ""
+    client_secret: ""
+    refresh_token: ""
+  openai:
+    openai_api_key: ""
+  notifications:
+    notify_service: "notify.mobile_app_your_phone"
 schema:
-  gmail_api_key: str
-  openai_api_key: str
-  notify_service: str
+  general:
+    log_interval: int
+    fetch_interval_minutes: int
+    days_to_fetch: int
+    custom_message: str
+  gmail:
+    enable_gmail: bool
+    gmail_api_key: str
+    client_id: str
+    client_secret: str
+    refresh_token: str
+  openai:
+    openai_api_key: str
+  notifications:
+    notify_service: str
