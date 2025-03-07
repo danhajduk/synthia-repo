@@ -90,6 +90,7 @@ def fetch_unread_emails():
 
         emails = {}
         next_page_token = None
+        api_call_count = 0  # Track the number of API calls
         
         while True:
             results = service.users().messages().list(
@@ -99,12 +100,14 @@ def fetch_unread_emails():
                 maxResults=500,  # Get more emails per request
                 pageToken=next_page_token  # Continue fetching if there are more pages
             ).execute()
+            api_call_count += 1  # Increment API call count
 
             messages = results.get("messages", [])
             logging.info(f"📨 {len(messages)} emails fetched (page).")
 
             for msg in messages:
                 msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
+                api_call_count += 1  # Increment API call count
                 headers = msg_data.get("payload", {}).get("headers", [])
 
                 sender = next((h["value"] for h in headers if h["name"] == "From"), "Unknown Sender")
@@ -121,6 +124,7 @@ def fetch_unread_emails():
                 break  # No more pages, exit loop
 
         logging.info(f"📊 Processed {len(emails)} emails.")
+        logging.info(f"🔢 Total API calls made: {api_call_count}")
 
         # Update the database with the fetched emails
         sql.save_email_data(emails)
