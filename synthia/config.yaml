@@ -1,6 +1,6 @@
 name: "Synthia"
 version: "0.0.17"
-slug: "synthia"
+slug: "synthia" 
 description: "Your personal AI assistant for email summaries and more."
 arch:
   - amd64

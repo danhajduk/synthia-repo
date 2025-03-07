@@ -150,7 +150,7 @@ def check_update():
     """
     latest_version = update.get_latest_version()
     if (latest_version and update.update_config(latest_version)):
-        return jsonify({"message": f"Updated to {latest_version, restarting..."})
+        return jsonify({"message": "Updated to {latest_version, restarting..."})
     return jsonify({"message": "Already up to date."})
 
 @app.route('/recreate_table', methods=['POST'])
