@@ -8,14 +8,30 @@ from googleapiclient.discovery import build
 # Gmail API Scope
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
+def load_gmail_config():
+    """Load Gmail API credentials from the configuration file."""
+    try:
+        with open("/data/options.json", "r") as f:
+            config = json.load(f)
+        logging.info("✅ Gmail configuration successfully loaded.")
+        return config["gmail"]
+    except Exception as e:
+        logging.error(f"❌ Failed to load Gmail configuration: {e}")
+        return {}
+
 def authenticate_gmail():
     """Authenticate with Gmail API using credentials from the configuration."""
+    config = load_gmail_config()
+    if not config:
+        logging.error("❌ Gmail configuration is missing.")
+        return None
+
     try:
         logging.info("🔑 Authenticating with Gmail API...")
         creds = Credentials.from_authorized_user_info({
-            "client_id": "YOUR_CLIENT_ID",
-            "client_secret": "YOUR_CLIENT_SECRET",
-            "refresh_token": "YOUR_REFRESH_TOKEN",
+            "client_id": config.get("client_id"),
+            "client_secret": config.get("client_secret"),
+            "refresh_token": config.get("refresh_token"),
         }, SCOPES)
 
         if creds.expired and creds.refresh_token:
@@ -53,7 +69,7 @@ def fetch_unread_emails():
                 userId="me",
                 labelIds=["INBOX"],
                 q=gmail_query,
-                maxResults=500,  # Get more emails
+                maxResults=500,  # Get more emails per request
                 pageToken=next_page_token  # Continue fetching if there are more pages
             ).execute()
 
@@ -78,5 +94,11 @@ def fetch_unread_emails():
         return sender_counts
 
     except Exception as e:
-        logging.error(f"❌ Error fetching emails: {e}")
+        error_message = str(e).lower()
+        if "invalid_client" in error_message:
+            logging.error("❌ Invalid OAuth client: Check your Client ID and Secret in Google Cloud.")
+        elif "quotaExceeded" in error_message:
+            logging.error("❌ Gmail API quota exceeded. Try again later.")
+        else:
+            logging.error(f"❌ Unexpected error fetching emails: {e}")
         return {}
