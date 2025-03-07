@@ -38,22 +38,30 @@ def authenticate_gmail():
     return build("gmail", "v1", credentials=creds)
 
 def fetch_unread_emails():
-    """Fetch unread emails from Gmail."""
+    """Fetch all unread emails from the last 7 days."""
     service = authenticate_gmail()
     if not service:
         return []
 
     try:
-        results = service.users().messages().list(userId="me", labelIds=["INBOX"], q="is:unread").execute()
+        # Calculate the date 7 days ago in Gmail's format (YYYY/MM/DD)
+        date_since = (datetime.datetime.utcnow() - datetime.timedelta(days=7)).strftime("%Y/%m/%d")
+
+        # Update the Gmail API query to fetch unread emails from the last 7 days
+        query = f"is:unread after:{date_since}"
+
+        results = service.users().messages().list(userId="me", labelIds=["INBOX"], q=query, maxResults=500).execute()
         messages = results.get("messages", [])
         email_summaries = []
 
-        for msg in messages[:3]:  # Fetch max 3 emails
+        for msg in messages:
             msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
             snippet = msg_data.get("snippet", "")
             email_summaries.append(snippet)
 
+        logging.info(f"📩 Fetched {len(email_summaries)} unread emails from the last 7 days.")
         return email_summaries
+
     except Exception as e:
         logging.error(f"Failed to fetch emails: {e}")
         return []
