@@ -18,7 +18,6 @@ def load_gmail_config():
         with open("/data/options.json", "r") as f:
             config = json.load(f)
         logging.info("✅ Gmail configuration successfully loaded.")
-        logging.debug(f"Loaded config: {config}")
         return config["gmail"]
     except Exception as e:
         logging.error(f"❌ Failed to load Gmail configuration: {e}")
@@ -101,7 +100,6 @@ def fetch_unread_emails():
                 break  # No more pages, exit loop
 
         logging.info(f"📊 Processed {len(emails)} emails.")
-        logging.debug(f"Emails: {emails}")
 
         # Update the database with the fetched emails
         sql.save_email_data(emails)
