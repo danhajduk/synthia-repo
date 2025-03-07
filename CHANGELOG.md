@@ -7,6 +7,7 @@
 - Added debug logging and debug switch to the configuration.
 - Updated logging in `gmail.py`, `web.py`, and `sql.py` to include both info and debug levels.
 - Added check to ensure the `general` key exists in the configuration.
+- Added debug switch to the settings page and routes to get and toggle the debug state.
 
 ## [0.0.15k] - 2025-03-07
 ### Added

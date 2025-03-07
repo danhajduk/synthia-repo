@@ -4,6 +4,7 @@ import json
 import sql
 import gmail
 import update  # Import the update script
+import yaml  # Import yaml module
 
 app = Flask(__name__, template_folder="/app/templates")
 
@@ -93,6 +94,32 @@ def recreate_table():
         return jsonify({"message": "Email table recreated successfully."})
     except Exception as e:
         return jsonify({"message": f"Error recreating table: {e}"}), 500
+
+
+@app.route('/toggle_debug', methods=['POST'])
+def toggle_debug():
+    try:
+        data = request.json
+        debug = data.get('debug', False)
+        with open("/app/config.yaml", "r") as f:
+            config = yaml.safe_load(f)
+        config['general']['debug'] = debug
+        with open("/app/config.yaml", "w") as f:
+            yaml.safe_dump(config, f)
+        return jsonify({"message": "Debug state updated successfully."})
+    except Exception as e:
+        return jsonify({"message": f"Error updating debug state: {e}"}), 500
+
+
+@app.route('/get_debug_state', methods=['GET'])
+def get_debug_state():
+    try:
+        with open("/app/config.yaml", "r") as f:
+            config = yaml.safe_load(f)
+        debug = config['general'].get('debug', False)
+        return jsonify({"debug": debug})
+    except Exception as e:
+        return jsonify({"message": f"Error retrieving debug state: {e}"}), 500
 
 
 def run():

@@ -73,6 +73,17 @@
         .recreate-button:hover {
             background-color: darkorange;
         }
+
+        .debug-switch {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .debug-switch input {
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -85,6 +96,10 @@
         <button class="clear-button" onclick="clearAndRefresh()">Clear & Refresh Emails</button>
         <button class="update-button" onclick="checkForUpdate()">Check for Updates</button>
         <button class="recreate-button" onclick="recreateTable()">Recreate Email Table</button>
+        <div class="debug-switch">
+            <label for="debug">Enable Debug Logging</label>
+            <input type="checkbox" id="debug" onchange="toggleDebug(this)">
+        </div>
         <p id="status"></p>
     </div>
 
@@ -109,6 +124,23 @@
                 .then(data => document.getElementById('status').innerText = data.message)
                 .catch(error => console.error('Error:', error));
         }
+
+        function toggleDebug(checkbox) {
+            fetch('/toggle_debug', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ debug: checkbox.checked })
+            })
+            .then(response => response.json())
+            .then(data => document.getElementById('status').innerText = data.message)
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Load current debug state
+        fetch('/get_debug_state')
+            .then(response => response.json())
+            .then(data => document.getElementById('debug').checked = data.debug)
+            .catch(error => console.error('Error:', error));
     </script>
 </body>
 </html>
