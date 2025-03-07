@@ -82,7 +82,7 @@ def check_update():
     """Check for updates and restart if needed."""
     latest_version = update.get_latest_version()
     if latest_version and update.update_config(latest_version):
-        return jsonify({"message": f"Updated to {latest_version, restarting..."})
+        return jsonify({"message": f"Updated to {latest_version}, restarting..."})
     return jsonify({"message": "Already up to date."})
 
 
