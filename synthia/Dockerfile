@@ -18,10 +18,12 @@ RUN pip install --no-cache-dir \
 # Ensure /data directory exists
 RUN mkdir -p /data
 
-# Copy files
+# Copy all required scripts
 COPY synthia.py /app/synthia.py
+COPY gmail.py /app/gmail.py
+COPY sql.py /app/sql.py  # <-- Ensure this is included
 COPY web.py /app/web.py
 COPY templates /app/templates
 
-# Start only **one** process (Flask Web UI + Email Fetching)
-CMD ["python3", "/app/web.py"]
+# Start Synthia (it will start web.py internally)
+CMD ["python3", "/app/synthia.py"]
