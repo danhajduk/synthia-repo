@@ -163,22 +163,22 @@
         <div class="summary">
             <div class="summary-box">
                 <h3>Unread Emails</h3>
-                <p>{{ unread_count }}</p>
+                <p id="unread-count">{{ unread_count }}</p>
             </div>
             <div class="summary-box">
                 <h3>Last Fetch</h3>
-                <p>{{ last_fetch }}</p>
+                <p id="last-fetch">{{ last_fetch }}</p>
             </div>
             <div class="summary-box">
                 <h3>Cutoff Date</h3>
-                <p>{{ cutoff_date }}</p>
+                <p id="cutoff-date">{{ cutoff_date }}</p>
             </div>
         </div>
 
         <!-- Email Senders List -->
         <div class="email-list">
             <h3>Email Sources</h3>
-            <ul>
+            <ul id="senders-list">
                 {% if senders %}
                     {% for sender, count in senders.items() %}
                         <li>
@@ -203,8 +203,28 @@
                 .catch(error => console.error("Error:", error));
         }
 
-        // Refresh status every 5 seconds
+        function updateEmailSummary() {
+            fetch('/email_summary')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("unread-count").innerText = data.unread_count;
+                    document.getElementById("last-fetch").innerText = data.last_fetch;
+                    document.getElementById("cutoff-date").innerText = data.cutoff_date;
+
+                    const sendersList = document.getElementById("senders-list");
+                    sendersList.innerHTML = "";
+                    for (const [sender, count] of Object.entries(data.senders)) {
+                        const li = document.createElement("li");
+                        li.innerHTML = `<span>${sender}</span><span class="email-badge">${count}</span>`;
+                        sendersList.appendChild(li);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        // Refresh status and email summary every 5 seconds
         setInterval(checkFetchingStatus, 5000);
+        setInterval(updateEmailSummary, 5000);
     </script>
 </body>
 </html>

@@ -58,6 +58,29 @@ def fetch_status():
     status = sql.get_metadata("fetch_status") or "✅ Ready"
     return jsonify({"status": status})
 
+@app.route("/email_summary")
+def email_summary():
+    """Return the current email summary."""
+    try:
+        senders = sql.get_email_data()
+        unread_count = sum(senders.values())
+        last_fetch = sql.get_metadata("last_fetch") or "N/A"
+        cutoff_date = sql.get_metadata("cutoff_date") or "N/A"
+        return jsonify({
+            "unread_count": unread_count,
+            "senders": senders,
+            "last_fetch": last_fetch,
+            "cutoff_date": cutoff_date
+        })
+    except Exception as e:
+        logging.error(f"❌ Error retrieving email summary: {e}")
+        return jsonify({
+            "unread_count": 0,
+            "senders": {},
+            "last_fetch": "N/A",
+            "cutoff_date": "N/A"
+        }), 500
+
 @app.route("/clear_and_refresh", methods=["POST"])
 def clear_and_refresh():
     """Clear email table and fetch new emails."""
