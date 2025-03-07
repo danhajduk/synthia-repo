@@ -81,7 +81,10 @@ def fetch_unread_emails():
                 headers = msg_data.get("payload", {}).get("headers", [])
 
                 sender = next((h["value"] for h in headers if h["name"] == "From"), "Unknown Sender")
-                emails[msg["id"]] = sender
+                if sender in emails:
+                    emails[sender] += 1
+                else:
+                    emails[sender] = 1
 
             next_page_token = results.get("nextPageToken")
             if not next_page_token:

@@ -139,8 +139,8 @@ def save_email_data(emails):
             if not email_exists(email_id):
                 logging.info(f"🔹 Inserting: EmailID={email_id}, Sender={sender}")
                 cursor.execute('''
-                    INSERT INTO synthia_emails (timestamp, email_id, sender, analyzed, category)
-                    VALUES (datetime('now'), ?, ?, 0, 'unknown')
+                    INSERT INTO synthia_emails (timestamp, email_id, sender, analyzed, category, email_count)
+                    VALUES (datetime('now'), ?, ?, 0, 'unknown', 1)
                 ''', (email_id, sender))
             else:
                 logging.info(f"🔹 Skipping already stored email: EmailID={email_id}")

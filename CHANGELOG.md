@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.15k] - 2025-03-07
+### Added
+- Updated version in configuration files.
+- Fixed email count increments.
+
 ## [0.0.15i] - 2025-03-07
 ### Added
 - Updated version in configuration files.
