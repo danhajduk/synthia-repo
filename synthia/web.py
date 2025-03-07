@@ -1,13 +1,21 @@
 from flask import Flask, render_template, jsonify
-import sqlite3
-import os
+import logging
 import sql
 
 app = Flask(__name__)
 
 def get_email_data():
     """Fetch email summary data from the database."""
-    return sql.get_email_data()
+    try:
+        return sql.get_email_data()
+    except Exception as e:
+        logging.error(f"Error fetching email data: {e}")
+        return {
+            "unread_count": 0,
+            "last_fetch": "Never",
+            "cutoff_date": "N/A",
+            "senders": []
+        }
 
 @app.route("/")
 def index():
@@ -21,5 +29,8 @@ def api_status():
     return jsonify(get_email_data())
 
 def run():
-    """Run the Flask web server."""
+    """Run the Flask web server on Ingress port 5000."""
     app.run(host="0.0.0.0", port=5000, debug=False)
+
+if __name__ == "__main__":
+    run()
