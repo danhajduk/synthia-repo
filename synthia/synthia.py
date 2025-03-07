@@ -17,6 +17,9 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+# Log the current working directory (for debugging)
+logging.info(f"Current working directory: {os.getcwd()}")
+
 # Paths
 CONFIG_PATH = "/data/options.json"
 DB_PATH = "/config/home-assistant_v2.db"  # Home Assistant's database path
