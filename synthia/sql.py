@@ -67,6 +67,14 @@ def check_table_structure():
         "category": "TEXT"
     }
 
+    cursor.execute("PRAGMA table_info(synthia_email_summary)")
+    columns_summary = cursor.fetchall()
+    expected_columns_summary = {
+        "id": "INTEGER",
+        "sender": "TEXT",
+        "email_count": "INTEGER"
+    }
+
     # Check if all expected columns are present and have the correct type
     for column in columns:
         name, col_type = column[1], column[2]
@@ -74,9 +82,15 @@ def check_table_structure():
             logging.warning(f"Column {name} has incorrect type {col_type}. Expected {expected_columns[name]}.")
             break
     else:
-        logging.info("Table structure is correct.")
-        conn.close()
-        return
+        for column in columns_summary:
+            name, col_type = column[1], column[2]
+            if name not in expected_columns_summary or expected_columns_summary[name] != col_type:
+                logging.warning(f"Column {name} has incorrect type {col_type}. Expected {expected_columns_summary[name]}.")
+                break
+        else:
+            logging.info("Table structure is correct.")
+            conn.close()
+            return
 
     # If the structure is incorrect, drop and recreate the tables
     logging.warning("Table structure is incorrect. Recreating tables.")

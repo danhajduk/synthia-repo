@@ -1,27 +1,48 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## [0.0.16] - 2025-03-07
+### Added
+- Modified database structure to include `recipient`, `subject`, and `unread_count` fields.
+- Added `synthia_email_summary` and `synthia_safe_senders` tables.
+- Added debug logging and debug switch to the configuration.
+- Updated logging in `gmail.py`, `web.py`, and `sql.py` to include both info and debug levels.
+- Added check to ensure the `general` key exists in the configuration.
+- Added debug switch to the settings page and routes to get and toggle the debug state.
+- Added debug switch to `config.json`.
+- Added debugging logs to identify and fix the issue with saving email data.
+- Fixed SQL syntax issues to ensure proper table creation.
+- Added `email_count` column to the expected columns in `check_table_structure`.
 
-## [0.0.13] - 2025-03-07
-### ✨ Added
-- **Auto-update feature**: Synthia can now automatically check for updates and restart if a new version is available.
-- **Check for Updates button**: Added a button in the **Settings page** to manually check for updates.
-- **Version display**: The current version is now displayed on the **main dashboard**.
-- **New UI layout**: Redesigned **index.html** with a modern card-based look.
-- **Better navigation**: Added a top navigation bar with a **Settings** button.
+## [0.0.15k] - 2025-03-07
+### Added
+- Fixed email count increments.
 
-### 🔧 Fixed
-- Fixed an issue where **`senders`** was being passed as a list instead of a dictionary in **index.html**.
-- Improved Flask request logging for better debugging.
-- **Ingress compatibility fixes** (still pending full integration).
+## [0.0.15i] - 2025-03-07
+### Added
+- Fix DB type error
 
-### 🛠 Improvements
-- **Cleaner UI layout**: Email data now displayed in structured **summary cards**.
-- **More responsive design**: Works better on mobile and tablet devices.
-- **Better error handling** for missing database files and API failures.
+## [0.0.15h] - 2025-03-07
+### Added
+- Reintroduced `config.json` and updated the version.
+- Updated `web.py` to read version from `config.json` and display it in the UI.
 
-## [0.0.12] - 2025-03-06
-### 🔧 Fixed
-- Fixed issue where **email summaries** were being limited to 3 instead of fetching from the **last 7 days**.
-- Improved logging format and error messages.
+## [0.0.15g] - 2025-03-07
+### Added
+- Added detailed logging to `save_email_data` function.
+- Added button in settings page to delete and recreate the email table.
+- Ensured correct number of arguments are passed to `save_email_data` function.
+- Removed `config.json` and ensured all references are updated to use `config.yaml`.
+- Updated `web.py` to read version from `config.yaml` and display it in the UI.
+
+## [0.0.15c] - 2025-02-28
+### Added
+- Fetch unread emails from Gmail and store them in an SQLite database.
+- Ensure no duplicate emails are stored.
+- Check and correct the database table structure before fetching emails.
+- Web interface with settings and dashboard.
+- Settings page with buttons to clear and refresh emails, check for updates, and recreate the email table.
+- Dashboard displaying email summaries and a list of email senders.
+- Configuration options in `config.yaml`.
+- Update mechanism to fetch the latest version from GitHub releases and update the configuration.
+- Detailed logging for debugging and monitoring.
 
