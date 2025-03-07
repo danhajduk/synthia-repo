@@ -75,6 +75,7 @@ def check_table_structure():
         "email_count": "INTEGER"
     }
 
+    logging.info("Checking table structure...")
     # Check if all expected columns are present and have the correct type
     for column in columns:
         name, col_type = column[1], column[2]
@@ -336,4 +337,3 @@ def recreate_table():
     conn.commit()
     conn.close()
     logging.info("Tables 'synthia_emails', 'synthia_email_summary', and 'synthia_safe_senders' recreated.")
-    
