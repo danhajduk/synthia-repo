@@ -8,37 +8,82 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            margin: 0;
+            padding: 20px;
         }
+
         .menu {
             display: flex;
             justify-content: space-between;
             padding: 10px;
         }
+
         .menu button {
             padding: 10px 20px;
             cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
         }
+
+        .menu button:hover {
+            background-color: #0056b3;
+        }
+
         .container {
             width: 50%;
             margin: auto;
             padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
+        .settings-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .clear-button, .update-button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .clear-button { background-color: red; }
+        .clear-button:hover { background-color: darkred; }
+
+        .update-button { background-color: green; }
+        .update-button:hover { background-color: darkgreen; }
     </style>
 </head>
 <body>
     <div class="menu">
         <button onclick="window.location.href='/'">Back to Dashboard</button>
     </div>
-    
+
     <div class="container">
-        <h2>Settings</h2>
-        <button onclick="clearAndRefresh()">Clear & Refresh Emails</button>
+        <div class="settings-title">Settings</div>
+        <button class="clear-button" onclick="clearAndRefresh()">Clear & Refresh Emails</button>
+        <button class="update-button" onclick="checkForUpdate()">Check for Updates</button>
         <p id="status"></p>
     </div>
 
     <script>
         function clearAndRefresh() {
             fetch('/clear_and_refresh', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => document.getElementById('status').innerText = data.message)
+                .catch(error => console.error('Error:', error));
+        }
+
+        function checkForUpdate() {
+            fetch('/check_update', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => document.getElementById('status').innerText = data.message)
                 .catch(error => console.error('Error:', error));
