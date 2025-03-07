@@ -7,15 +7,26 @@ import json
 DB_PATH = "/data/synthia.db"
 
 def connect_db():
-    """Ensure database exists and establish connection."""
+    """Ensure database exists, create table if not, and establish connection."""
     try:
         conn = sqlite3.connect(DB_PATH, timeout=10)
-        logging.info(f"✅ Connected to database: {DB_PATH}")
+        cursor = conn.cursor()
+        # Create table if it doesn't exist
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS synthia_emails (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT,
+                unread_count INTEGER,
+                sender TEXT,
+                email_count INTEGER
+            )
+        ''')
+        conn.commit()
+        logging.info(f"✅ Connected to database and ensured table exists: {DB_PATH}")
         return conn
     except sqlite3.OperationalError as e:
         logging.error(f"❌ Database connection failed: {e}")
         return None
-
 def create_table():
     """Create table in Synthia's database if it doesn't exist."""
     conn = connect_db()
@@ -50,7 +61,7 @@ def clear_email_table():
 
 def save_email_data(unread_count, sender_counts):
     """Save unread email count & sender counts to Synthia's database."""
-    logging.info("💾 Saving email data to the database...")
+    logging.info("💾 Attempting to save email data to the database...")
     logging.info(f"📩 Unread Emails: {unread_count}")
     logging.info(f"📨 Sender Counts: {json.dumps(sender_counts, indent=2)}")
 
@@ -80,7 +91,7 @@ def save_email_data(unread_count, sender_counts):
     finally:
         conn.close()
         logging.info("🔒 Database connection closed.")
-
+        
 def get_email_data():
     """Retrieve unread email count and sender information from the database."""
     logging.info("📥 Fetching email data from the database...")
