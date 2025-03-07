@@ -13,23 +13,34 @@ def log_request():
     """Log all incoming requests for debugging."""
     logging.info(f"📥 Received request: {request.method} {request.path} from {request.remote_addr}")
 
+def get_email_data():
+    """Fetch email summary data from the database."""
+    try:
+        data = sql.get_email_data()
+        # Convert `senders` list to dictionary if necessary
+        if isinstance(data["senders"], list):
+            data["senders"] = {entry["sender"]: entry["count"] for entry in data["senders"]}
+        return data
+    except Exception as e:
+        logging.error(f"❌ Error fetching email data: {e}")
+        return {
+            "unread_count": 0,
+            "last_fetch": "Never",
+            "cutoff_date": "N/A",
+            "senders": {}
+        }
+
 @app.route("/")
 def index():
     """Render main dashboard."""
     logging.info("✅ Rendering index.html")
-    data = sql.get_email_data()
+    data = get_email_data()
     return render_template("index.html", **data)
 
 @app.route("/settings")
 def settings():
     """Render settings page."""
     logging.info("✅ Rendering settings.html")
-    return render_template("settings.html")
-
-@app.route("/ingress/settings")
-def ingress_settings():
-    """Handle Ingress requests to `/settings`."""
-    logging.info("✅ Rendering settings.html via Ingress")
     return render_template("settings.html")
 
 @app.route("/clear_and_refresh", methods=["POST"])
