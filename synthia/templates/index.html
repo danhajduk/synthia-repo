@@ -180,7 +180,7 @@
             <h3>Email Sources</h3>
             <ul id="senders-list">
                 {% if senders %}
-                    {% for sender, count in senders|dictsort(true, 'count') %}
+                    {% for sender, count in senders|dictsort(true, 'value') %}
                         <li>
                             <span>{{ sender }}</span>
                             <span class="email-badge">{{ count }}</span>
