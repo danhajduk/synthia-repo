@@ -52,7 +52,7 @@ if __name__ == "__main__":
     logging.info("#####################################################################################")
     logging.info("Synthia is running...")
     #log_directory_structure()
-    sql.create_table()  # Ensure the database table exists
+    #sql.create_table()  # Ensure the database table exists
     logging.info("Starting Web UI...")
     web.run()  # Start the Flask web server in a separate thread
     main_loop()
