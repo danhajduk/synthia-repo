@@ -179,16 +179,16 @@
         <div class="email-list">
             <h3>Email Sources</h3>
             <ul id="senders-list">
-                {% if senders %}
-                    {% for sender, count in senders|dictsort(true, 'value') %}
-                        <li>
-                            <span>{{ sender }}</span>
-                            <span class="email-badge">{{ count }}</span>
-                        </li>
-                    {% endfor %}
-                {% else %}
-                    <p>No senders found.</p>
-                {% endif %}
+            {% if senders %}
+                {% for sender, count in senders|dictsort(false, 'value') %}
+                <li>
+                    <span>{{ sender }}</span>
+                    <span class="email-badge">{{ count }}</span>
+                </li>
+                {% endfor %}
+            {% else %}
+                <p>No senders found.</p>
+            {% endif %}
             </ul>
         </div>
     </div>
