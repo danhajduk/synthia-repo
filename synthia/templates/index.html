@@ -180,7 +180,7 @@
             <h3>Email Sources</h3>
             <ul id="senders-list">
                 {% if senders %}
-                    {% for sender, count in senders.items() %}
+                    {% for sender, count in senders|dictsort(true, 'count') %}
                         <li>
                             <span>{{ sender }}</span>
                             <span class="email-badge">{{ count }}</span>
@@ -194,11 +194,20 @@
     </div>
 
     <script>
+        let previousStatus = "Ready";
+
         function checkFetchingStatus() {
             fetch('/fetch_status')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById("fetch-status").innerHTML = data.status;
+                    const fetchStatusElement = document.getElementById("fetch-status");
+                    fetchStatusElement.innerHTML = data.status;
+
+                    if (data.status === "Ready" && previousStatus !== "Ready") {
+                        updateEmailSummary();
+                    }
+
+                    previousStatus = data.status;
                 })
                 .catch(error => console.error("Error:", error));
         }

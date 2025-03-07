@@ -216,7 +216,7 @@ def get_email_data():
         logging.info("✅ Ensured tables exist.")
 
         # Fetch email summary data
-        cursor.execute("SELECT sender, email_count FROM synthia_email_summary ORDER BY id DESC")
+        cursor.execute("SELECT sender, email_count FROM synthia_email_summary ORDER BY email_count DESC, sender ASC")
         rows = cursor.fetchall()
         conn.close()
 
