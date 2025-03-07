@@ -1,10 +1,13 @@
 from flask import Flask, render_template, jsonify
 import sqlite3
 import os
+import logging
+import threading
+import synthia  # Import main script
 
 app = Flask(__name__)
 
-# Database Path (Ensure it matches Synthia's config)
+# Database Path
 DB_PATH = "/data/synthia.db"
 
 def get_email_data():
@@ -43,5 +46,12 @@ def api_status():
     """Return email summary data as JSON."""
     return jsonify(get_email_data())
 
+def start_synthia():
+    """Start Synthia email fetcher in a separate thread."""
+    logging.info("Starting Synthia email fetcher in background...")
+    threading.Thread(target=synthia.run, daemon=True).start()
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    start_synthia()
+    logging.info("Starting Flask web UI on port 5000...")
+    app.run(host="0.0.0.0", port=5005, debug=False)
