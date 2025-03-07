@@ -46,7 +46,6 @@ def authenticate_gmail():
 
         service = build("gmail", "v1", credentials=creds)
         logging.info("✅ Gmail service built successfully.")
-        logging.debug(f"Service: {service}")
         return service
     except Exception as e:
         logging.error(f"❌ Failed to authenticate with Gmail API: {e}")
@@ -83,12 +82,10 @@ def fetch_unread_emails():
 
             messages = results.get("messages", [])
             logging.info(f"📨 {len(messages)} emails fetched (page).")
-            logging.debug(f"Messages: {messages}")
 
             for msg in messages:
                 msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
                 headers = msg_data.get("payload", {}).get("headers", [])
-                logging.debug(f"Message data: {msg_data}")
 
                 sender = next((h["value"] for h in headers if h["name"] == "From"), "Unknown Sender")
                 email_id = msg["id"]
