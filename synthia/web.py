@@ -8,7 +8,7 @@ import update  # Import the update script
 app = Flask(__name__, template_folder="/app/templates")
 
 # Enable logging for debugging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 fetching = False  # Track if emails are being fetched
 

@@ -4,6 +4,9 @@
 ### Added
 - Modified database structure to include `recipient` and `subject` fields.
 - Added `synthia_email_summary` and `synthia_safe_senders` tables.
+- Added debug logging and debug switch to the configuration.
+- Updated logging in `gmail.py`, `web.py`, and `sql.py` to include both info and debug levels.
+- Added check to ensure the `general` key exists in the configuration.
 
 ## [0.0.15k] - 2025-03-07
 ### Added

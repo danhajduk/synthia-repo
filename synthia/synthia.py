@@ -10,6 +10,10 @@ import yaml
 with open("/app/config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
+# Ensure 'general' key exists in the configuration
+if "general" not in config:
+    config["general"] = {}
+
 # Configure Logging
 log_level = logging.DEBUG if config["general"].get("debug", False) else logging.INFO
 logging.basicConfig(
