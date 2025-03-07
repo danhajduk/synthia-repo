@@ -23,5 +23,5 @@ COPY synthia.py /app/synthia.py
 COPY web.py /app/web.py
 COPY templates /app/templates
 
-# Start both Synthia and Flask UI
-CMD ["sh", "-c", "python3 /app/synthia.py & python3 /app/web.py"]
+# Start only **one** process (Flask Web UI + Email Fetching)
+CMD ["python3", "/app/web.py"]
