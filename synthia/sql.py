@@ -1,6 +1,7 @@
 import sqlite3
 import logging
 import os
+import json
 
 # Database Path
 DB_PATH = "/data/synthia.db"
