@@ -20,6 +20,7 @@ def connect_db():
                 sender TEXT,
                 recipient TEXT,
                 subject TEXT,
+                unread_count INTEGER,  # Add unread_count column
                 analyzed BOOLEAN DEFAULT 0,
                 category TEXT DEFAULT 'unknown'
             )
@@ -61,6 +62,7 @@ def check_table_structure():
         "sender": "TEXT",
         "recipient": "TEXT",
         "subject": "TEXT",
+        "unread_count": "INTEGER",  # Add unread_count column
         "analyzed": "BOOLEAN",
         "category": "TEXT"
     }
@@ -90,6 +92,7 @@ def check_table_structure():
             sender TEXT,
             recipient TEXT,
             subject TEXT,
+            unread_count INTEGER,  # Add unread_count column
             analyzed BOOLEAN DEFAULT 0,
             category TEXT DEFAULT 'unknown'
         )
@@ -126,6 +129,7 @@ def create_table():
             sender TEXT,
             recipient TEXT,
             subject TEXT,
+            unread_count INTEGER,  # Add unread_count column
             analyzed BOOLEAN DEFAULT 0,
             category TEXT DEFAULT 'unknown'
         )
@@ -181,12 +185,13 @@ def save_email_data(emails):
             sender = email_data['sender']
             recipient = email_data['recipient']
             subject = email_data['subject']
+            unread_count = email_data.get('unread_count', 1)  # Default to 1 if not provided
             if not email_exists(email_id):
                 logging.debug(f"🔹 Inserting: EmailID={email_id}, Sender={sender}")
                 cursor.execute('''
-                    INSERT INTO synthia_emails (timestamp, email_id, sender, recipient, subject, analyzed, category)
-                    VALUES (datetime('now'), ?, ?, ?, ?, 0, 'unknown')
-                ''', (email_id, sender, recipient, subject))
+                    INSERT INTO synthia_emails (timestamp, email_id, sender, recipient, subject, unread_count, analyzed, category)
+                    VALUES (datetime('now'), ?, ?, ?, ?, ?, 0, 'unknown')
+                ''', (email_id, sender, recipient, subject, unread_count))
                 cursor.execute('''
                     INSERT INTO synthia_email_summary (sender, email_count)
                     VALUES (?, 1)
@@ -229,6 +234,7 @@ def get_email_data():
                 sender TEXT,
                 recipient TEXT,
                 subject TEXT,
+                unread_count INTEGER,  # Add unread_count column
                 analyzed BOOLEAN DEFAULT 0,
                 category TEXT DEFAULT 'unknown'
             )
@@ -290,6 +296,7 @@ def recreate_table():
             sender TEXT,
             recipient TEXT,
             subject TEXT,
+            unread_count INTEGER,  # Add unread_count column
             analyzed BOOLEAN DEFAULT 0,
             category TEXT DEFAULT 'unknown'
         )

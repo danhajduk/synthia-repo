@@ -1,6 +1,6 @@
 {
     "name": "Synthia - AI Personal Assistant",
-    "version": "0.0.16b",
+    "version": "0.0.16c",
     "slug": "synthia",
     "description": "Your personal AI assistant for email summaries and more.",
     "arch": ["amd64", "armv7", "armhf"],
@@ -17,7 +17,8 @@
         "log_interval": 10,
         "fetch_interval_minutes": 10,
         "days_to_fetch": 7,
-        "custom_message": "Synthia is on"
+        "custom_message": "Synthia is on",
+        "debug": false
       },
       "gmail": {
         "enable_gmail": true,
@@ -38,7 +39,8 @@
         "log_interval": "int",
         "fetch_interval_minutes": "int",
         "days_to_fetch": "int",
-        "custom_message": "str"
+        "custom_message": "str",
+        "debug": "bool"
       },
       "gmail": {
         "enable_gmail": "bool",
