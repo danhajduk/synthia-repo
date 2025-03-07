@@ -6,12 +6,15 @@ import json
 # Database Path
 DB_PATH = "/data/synthia.db"
 
+# Enable logging for debugging with timestamps
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+
 def connect_db():
     """Ensure database exists, create table if not, and establish connection."""
     try:
         conn = sqlite3.connect(DB_PATH, timeout=10)
         cursor = conn.cursor()
-        # Create table if it doesn't exist
+        # Create tables if they don't exist
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS synthia_emails (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,15 +25,21 @@ def connect_db():
                 email_count INTEGER
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS synthia_metadata (
+                key TEXT PRIMARY KEY,
+                value TEXT
+            )
+        ''')
         conn.commit()
-        logging.info(f"✅ Connected to database and ensured table exists: {DB_PATH}")
+        logging.info(f"✅ Connected to database and ensured tables exist: {DB_PATH}")
         return conn
     except sqlite3.OperationalError as e:
         logging.error(f"❌ Database connection failed: {e}")
         return None
 
 def create_table():
-    """Create table in Synthia's database if it doesn't exist."""
+    """Create tables in Synthia's database if they don't exist."""
     conn = connect_db()
     if conn is None:
         logging.error("Could not establish database connection.")
@@ -46,9 +55,15 @@ def create_table():
             email_count INTEGER
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS synthia_metadata (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
-    logging.info("Table 'synthia_emails' created or already exists.")
+    logging.info("Tables 'synthia_emails' and 'synthia_metadata' created or already exist.")
 
 def clear_email_table():
     """Clear the email table to reset data."""
@@ -165,3 +180,55 @@ def recreate_table():
     conn.commit()
     create_table()
     logging.info("Table 'synthia_emails' recreated.")
+
+def get_metadata(key):
+    """Retrieve metadata value from the database."""
+    logging.info(f"📥 Fetching metadata for key: {key}")
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM synthia_metadata WHERE key = ?", (key,))
+        result = cursor.fetchone()
+        conn.close()
+
+        if result:
+            logging.info(f"🔎 Retrieved metadata for key: {key}")
+            return result[0]
+
+        logging.warning(f"⚠️ No metadata found for key: {key}")
+        return None
+
+    except sqlite3.Error as e:
+        logging.error(f"❌ Database error: {e}")
+        return None
+
+    except Exception as e:
+        logging.error(f"❌ Unexpected error: {e}")
+        return None
+
+def set_metadata(key, value):
+    """Set metadata value in the database."""
+    logging.info(f"💾 Setting metadata for key: {key} to value: {value}")
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO synthia_metadata (key, value)
+            VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        ''', (key, value))
+        conn.commit()
+        conn.close()
+        logging.info(f"✅ Metadata for key: {key} set to value: {value}")
+
+    except sqlite3.Error as e:
+        logging.error(f"❌ Database error: {e}")
+
+    except Exception as e:
+        logging.error(f"❌ Unexpected error: {e}")
+
+    finally:
+        conn.close()
+        logging.info("🔒 Database connection closed.")

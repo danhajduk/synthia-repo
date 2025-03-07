@@ -9,6 +9,9 @@ import sql  # Import sql module to update metadata
 # Gmail API Scope
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
+# Enable logging for debugging with timestamps
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+
 def load_gmail_config():
     """Load Gmail API credentials from the configuration file."""
     try:
