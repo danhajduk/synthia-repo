@@ -33,6 +33,8 @@ def connect_db():
                 timestamp TEXT,
                 unread_count INTEGER,
                 sender TEXT,
+                recipient TEXT,
+                subject TEXT,
                 email_count INTEGER
             )
         ''')
@@ -65,6 +67,8 @@ def create_table():
             timestamp TEXT,
             unread_count INTEGER,
             sender TEXT,
+            recipient TEXT,
+            subject TEXT,
             email_count INTEGER
         )
     ''')
@@ -106,13 +110,22 @@ def save_email_data(emails):
     try:
         for email_id, email_data in emails.items():
             sender = email_data.get('sender', 'Unknown Sender')
+            recipient = email_data.get('recipient', 'Unknown Recipient')
+            subject = email_data.get('subject', 'No Subject')
             unread_count = email_data.get('unread_count', 1)  # Default to 1 if not provided
 
+            logging.debug(f"Inserting email: {email_id}, {sender}, {recipient}, {subject}, {unread_count}")
+
             cursor.execute('''
-                INSERT INTO synthia_emails (email_id, timestamp, unread_count, sender, email_count)
-                VALUES (?, datetime('now'), ?, ?, ?)
-                ON CONFLICT(email_id) DO UPDATE SET unread_count = excluded.unread_count
-            ''', (email_id, unread_count, sender, unread_count))
+                INSERT INTO synthia_emails (email_id, timestamp, unread_count, sender, recipient, subject, email_count)
+                VALUES (?, datetime('now'), ?, ?, ?, ?, ?)
+                ON CONFLICT(email_id) DO UPDATE SET 
+                    unread_count = excluded.unread_count,
+                    sender = excluded.sender,
+                    recipient = excluded.recipient,
+                    subject = excluded.subject,
+                    email_count = excluded.email_count
+            ''', (email_id, unread_count, sender, recipient, subject, unread_count))
 
         conn.commit()
         logging.info("✅ Email data successfully saved.")
