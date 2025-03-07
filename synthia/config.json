@@ -1,0 +1,58 @@
+{
+    "name": "Synthia - AI Personal Assistant",
+    "version": "0.0.11",
+    "slug": "synthia",
+    "description": "Your personal AI assistant for email summaries and more.",
+    "arch": ["amd64", "armv7", "armhf"],
+    "init": false,
+    "ingress": true,
+    "ingress_port": 5000,
+    "ingress_entry": "/",
+    "panel_icon": "mdi:email",
+    "panel_title": "Synthia",
+    "options": {
+      "general": {
+        "log_interval": 10,
+        "fetch_interval_minutes": 10,
+        "days_to_fetch": 7,
+        "custom_message": "Synthia is on"
+      },
+      "gmail": {
+        "enable_gmail": true,
+        "gmail_api_key": "",
+        "client_id": "",
+        "client_secret": "",
+        "refresh_token": ""
+      },
+      "openai": {
+        "openai_api_key": ""
+      },
+      "notifications": {
+        "notify_service": "notify.mobile_app_your_phone"
+      }
+    },
+    "schema": {
+      "general": {
+        "log_interval": "int",
+        "fetch_interval_minutes": "int",
+        "days_to_fetch": "int",
+        "custom_message": "str"
+      },
+      "gmail": {
+        "enable_gmail": "bool",
+        "gmail_api_key": "str",
+        "client_id": "str",
+        "client_secret": "str",
+        "refresh_token": "str"
+      },
+      "openai": {
+        "openai_api_key": "str"
+      },
+      "notifications": {
+        "notify_service": "str"
+      }
+    },
+    "map": ["data:rw"],
+    "host_network": true
+  }
+  
