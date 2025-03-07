@@ -21,3 +21,4 @@
 - Update mechanism to fetch the latest version from GitHub releases and update the configuration.
 - Detailed logging for debugging and monitoring.
 
+  

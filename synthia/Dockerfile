@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir \
     google-auth \
     google-auth-oauthlib \
     google-auth-httplib2 \
-    google-api-python-client
+    google-api-python-client \
+    pyyaml  # Add pyyaml for YAML support
 
 # Ensure /data directory exists
 RUN mkdir -p /data
