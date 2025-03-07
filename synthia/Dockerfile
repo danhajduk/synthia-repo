@@ -21,7 +21,7 @@ RUN mkdir -p /data
 # Copy all required scripts
 COPY synthia.py /app/synthia.py
 COPY gmail.py /app/gmail.py
-COPY sql.py /app/sql.py  # <-- Ensure this is included
+COPY sql.py /app/sql.py  
 COPY web.py /app/web.py
 COPY templates /app/templates
 
