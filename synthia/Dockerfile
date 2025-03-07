@@ -18,12 +18,8 @@ RUN pip install --no-cache-dir \
 # Ensure /data directory exists
 RUN mkdir -p /data
 
-# Copy all required scripts
-COPY synthia.py /app/synthia.py
-COPY gmail.py /app/gmail.py
-COPY sql.py /app/sql.py  
-COPY web.py /app/web.py
-COPY templates /app/templates
+# Copy everything at once
+COPY . /app/
 
 # Start Synthia (it will start web.py internally)
 CMD ["python3", "/app/synthia.py"]
