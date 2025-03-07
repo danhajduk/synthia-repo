@@ -27,7 +27,7 @@ def connect_db():
         cursor = conn.cursor()
         # Create tables if they don't exist
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS synthia_emails (
+            CREATE TABLE IF NOT EXISTS synthia_unread_emails (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email_id TEXT UNIQUE,
                 timestamp TEXT,
@@ -35,13 +35,20 @@ def connect_db():
                 sender TEXT,
                 recipient TEXT,
                 subject TEXT,
-                email_count INTEGER
+                analyzed INTEGER DEFAULT 0,
+                category TEXT
             )
         ''')
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS synthia_metadata (
                 key TEXT PRIMARY KEY,
                 value TEXT
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS synthia_senders_summary (
+                sender TEXT PRIMARY KEY,
+                email_count INTEGER
             )
         ''')
         conn.commit()
@@ -61,7 +68,7 @@ def create_table():
         return
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS synthia_emails (
+        CREATE TABLE IF NOT EXISTS synthia_unread_emails (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email_id TEXT UNIQUE,
             timestamp TEXT,
@@ -69,7 +76,8 @@ def create_table():
             sender TEXT,
             recipient TEXT,
             subject TEXT,
-            email_count INTEGER
+            analyzed INTEGER DEFAULT 0,
+            category TEXT
         )
     ''')
     cursor.execute('''
@@ -78,9 +86,15 @@ def create_table():
             value TEXT
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS synthia_senders_summary (
+            sender TEXT PRIMARY KEY,
+            email_count INTEGER
+        )
+    ''')
     conn.commit()
     conn.close()
-    logging.info("Tables 'synthia_emails' and 'synthia_metadata' created or already exist.")
+    logging.info("Tables 'synthia_unread_emails', 'synthia_metadata', and 'synthia_senders_summary' created or already exist.")
 
 def clear_email_table():
     """
@@ -91,7 +105,7 @@ def clear_email_table():
         logging.error("Could not connect to database to clear emails.")
         return
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM synthia_emails")
+    cursor.execute("DELETE FROM synthia_unread_emails")
     conn.commit()
     conn.close()
     logging.info("Email table cleared.")
@@ -117,15 +131,23 @@ def save_email_data(emails):
             logging.debug(f"Inserting email: {email_id}, {sender}, {recipient}, {subject}, {unread_count}")
 
             cursor.execute('''
-                INSERT INTO synthia_emails (email_id, timestamp, unread_count, sender, recipient, subject, email_count)
-                VALUES (?, datetime('now'), ?, ?, ?, ?, ?)
+                INSERT INTO synthia_unread_emails (email_id, timestamp, unread_count, sender, recipient, subject, analyzed, category)
+                VALUES (?, datetime('now'), ?, ?, ?, ?, 0, NULL)
                 ON CONFLICT(email_id) DO UPDATE SET 
                     unread_count = excluded.unread_count,
                     sender = excluded.sender,
                     recipient = excluded.recipient,
                     subject = excluded.subject,
-                    email_count = excluded.email_count
-            ''', (email_id, unread_count, sender, recipient, subject, unread_count))
+                    analyzed = excluded.analyzed,
+                    category = excluded.category
+            ''', (email_id, unread_count, sender, recipient, subject))
+
+            cursor.execute('''
+                INSERT INTO synthia_senders_summary (sender, email_count)
+                VALUES (?, 1)
+                ON CONFLICT(sender) DO UPDATE SET 
+                    email_count = email_count + 1
+            ''', (sender,))
 
         conn.commit()
         logging.info("✅ Email data successfully saved.")
@@ -155,7 +177,7 @@ def get_email_data():
         logging.info(f"✅ Connected to database: {DB_PATH}")
 
         # Fetch email summary data
-        cursor.execute("SELECT sender, email_count FROM synthia_emails ORDER BY email_count DESC, sender ASC")
+        cursor.execute("SELECT sender, email_count FROM synthia_senders_summary ORDER BY email_count DESC, sender ASC")
         rows = cursor.fetchall()
         conn.close()
 
@@ -190,7 +212,7 @@ def update_email_status(email_id, unread_count):
         return
     cursor = conn.cursor()
     cursor.execute('''
-        UPDATE synthia_emails
+        UPDATE synthia_unread_emails
         SET unread_count = ?
         WHERE email_id = ?
     ''', (unread_count, email_id))
@@ -208,7 +230,7 @@ def delete_read_emails():
         return
     cursor = conn.cursor()
     cursor.execute('''
-        DELETE FROM synthia_emails
+        DELETE FROM synthia_unread_emails
         WHERE unread_count = 0
     ''')
     conn.commit()
@@ -224,10 +246,11 @@ def recreate_table():
         logging.error("Could not establish database connection.")
         return
     cursor = conn.cursor()
-    cursor.execute("DROP TABLE IF EXISTS synthia_emails")
+    cursor.execute("DROP TABLE IF EXISTS synthia_unread_emails")
+    cursor.execute("DROP TABLE IF EXISTS synthia_senders_summary")
     conn.commit()
     create_table()
-    logging.info("Table 'synthia_emails' recreated.")
+    logging.info("Tables 'synthia_unread_emails' and 'synthia_senders_summary' recreated.")
 
 def get_metadata(key):
     """

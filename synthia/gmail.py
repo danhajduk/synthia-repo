@@ -68,7 +68,7 @@ def authenticate_gmail():
 
 def fetch_unread_emails():
     """
-    Fetch unread emails from Gmail from the last 7 days.
+    Fetch unread emails from Gmail from the last 1 day (for development).
 
     Returns:
         dict: A dictionary containing email data.
@@ -84,9 +84,9 @@ def fetch_unread_emails():
 
     try:
         now = datetime.datetime.utcnow()
-        past_week = (now - datetime.timedelta(days=7)).strftime('%Y/%m/%d')
-        gmail_query = f"is:unread after:{past_week}"
-        logging.info(f"📅 Fetching emails from: {past_week}")
+        past_day = (now - datetime.timedelta(days=1)).strftime('%Y/%m/%d')  # Change to 1 day
+        gmail_query = f"is:unread after:{past_day}"
+        logging.info(f"📅 Fetching emails from: {past_day}")
 
         emails = {}
         next_page_token = None

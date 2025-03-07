@@ -130,7 +130,7 @@ def clear_and_refresh():
         emails = gmail.fetch_unread_emails()
         sql.save_email_data(emails)  # Pass the emails dictionary
         sql.set_metadata("last_fetch", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        sql.set_metadata("cutoff_date", (datetime.datetime.now() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
+        sql.set_metadata("cutoff_date", (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))  # Change to 1 day
 
         logging.info("✅ Database cleared & emails refreshed.")
         return jsonify({"message": "Database cleared & emails refreshed."})
@@ -150,7 +150,7 @@ def check_update():
     """
     latest_version = update.get_latest_version()
     if (latest_version and update.update_config(latest_version)):
-        return jsonify({"message": "Updated to {latest_version, restarting..."})
+        return jsonify({"message": f"Updated to {latest_version}, restarting..."})
     return jsonify({"message": "Already up to date."})
 
 @app.route('/recreate_table', methods=['POST'])
@@ -213,7 +213,7 @@ def periodic_fetch():
             emails = gmail.fetch_unread_emails()
             sql.save_email_data(emails)
             sql.set_metadata("last_fetch", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            sql.set_metadata("cutoff_date", (datetime.datetime.now() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
+            sql.set_metadata("cutoff_date", (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m/%d"))  # Change to 1 day
             logging.info("✅ Periodic fetch completed.")
         except Exception as e:
             logging.error(f"❌ Error during periodic fetch: {e}")
