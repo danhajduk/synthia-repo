@@ -9,9 +9,10 @@ def connect_db():
     """Ensure database exists and establish connection."""
     try:
         conn = sqlite3.connect(DB_PATH, timeout=10)
+        logging.info(f"✅ Connected to database: {DB_PATH}")
         return conn
     except sqlite3.OperationalError as e:
-        logging.error(f"Database connection failed: {e}")
+        logging.error(f"❌ Database connection failed: {e}")
         return None
 
 def create_table():
@@ -48,27 +49,36 @@ def clear_email_table():
 
 def save_email_data(unread_count, sender_counts):
     """Save unread email count & sender counts to Synthia's database."""
+    logging.info("💾 Saving email data to the database...")
+    logging.info(f"📩 Unread Emails: {unread_count}")
+    logging.info(f"📨 Sender Counts: {json.dumps(sender_counts, indent=2)}")
+
     conn = connect_db()
     if conn is None:
-        logging.error("Could not connect to database to save data.")
+        logging.error("❌ Could not connect to database to save data.")
         return
     cursor = conn.cursor()
 
-    for sender, count in sender_counts.items():
-        cursor.execute('''
-            INSERT INTO synthia_emails (timestamp, unread_count, sender, email_count)
-            VALUES (datetime('now'), ?, ?, ?)
-        ''', (unread_count, sender, count))
+    try:
+        for sender, count in sender_counts.items():
+            logging.info(f"🔹 Inserting: {sender} - {count} emails")
+            cursor.execute('''
+                INSERT INTO synthia_emails (timestamp, unread_count, sender, email_count)
+                VALUES (datetime('now'), ?, ?, ?)
+            ''', (unread_count, sender, count))
 
-    conn.commit()
-    conn.close()
-    logging.info("Email data successfully saved to Synthia's database.")
+        conn.commit()
+        logging.info("✅ Email data successfully saved to Synthia's database.")
 
-import logging
-import sqlite3
-import json
+    except sqlite3.Error as e:
+        logging.error(f"❌ Database error while saving email data: {e}")
 
-DB_PATH = "/data/synthia.db"
+    except Exception as e:
+        logging.error(f"❌ Unexpected error while saving email data: {e}")
+
+    finally:
+        conn.close()
+        logging.info("🔒 Database connection closed.")
 
 def get_email_data():
     """Retrieve unread email count and sender information from the database."""
