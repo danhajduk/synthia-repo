@@ -1,6 +1,6 @@
 {
   "name": "Synthia - AI Personal Assistant",
-  "version": "0.0.10E",
+  "version": "0.0.10f",
   "slug": "synthia",
   "description": "A personal AI assistant for Home Assistant.",
   "startup": "application",
@@ -38,5 +38,6 @@
       "client_secret": "str",
       "refresh_token": "str"
     }
-  }
+  },
+  "map": ["config:rw"]  /* <-- This gives Synthia read/write access to /config */
 }
