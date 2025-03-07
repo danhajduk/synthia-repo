@@ -62,24 +62,18 @@ def fetch_unread_emails():
         return {}
 
     try:
-        # Define the time range for the last 7 days
-        now = datetime.datetime.utcnow()
-        past_week = (now - datetime.timedelta(days=7)).isoformat() + 'Z'  # 'Z' indicates UTC time
-
-        # Fetch unread emails from the last 7 days
-        logging.info(f"📅 Fetching emails from: {past_week} to {now.isoformat()}")
-
+        # DEBUG: Try fetching ALL emails, not just unread
         results = service.users().messages().list(
             userId="me",
             labelIds=["INBOX"],
-            q=f"is:unread after:{past_week}"
+            q=""  # Empty query to fetch all emails
         ).execute()
 
         messages = results.get("messages", [])
-        logging.info(f"📨 {len(messages)} unread emails fetched.")
+        logging.info(f"📨 {len(messages)} total emails fetched (ignoring filters).")
 
         sender_counts = {}
-        for msg in messages:
+        for msg in messages[:10]:  # Fetch max 10 emails for testing
             msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
             headers = msg_data.get("payload", {}).get("headers", [])
 
