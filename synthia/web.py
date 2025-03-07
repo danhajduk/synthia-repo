@@ -1,25 +1,13 @@
+import os
 from flask import Flask, render_template, jsonify, request
 import logging
 import sql
 import gmail
 
-app = Flask(__name__, template_folder="/app/templates")  # Ensure Flask finds templates
+TEMPLATE_DIR = os.path.abspath("/app/templates")  # Absolute path to templates
+print(f"🛠️ Flask is looking for templates in: {TEMPLATE_DIR}")
 
-def get_email_data():
-    """Fetch email summary data from the database."""
-    try:
-        data = sql.get_email_data()  # Ensure this function exists in sql.py
-        if isinstance(data["senders"], list):
-            data["senders"] = {sender["sender"]: sender["count"] for sender in data["senders"]}
-        return data
-    except Exception as e:
-        logging.error(f"Error fetching email data: {e}")
-        return {
-            "unread_count": 0,
-            "last_fetch": "Never",
-            "cutoff_date": "N/A",
-            "senders": {}
-        }
+app = Flask(__name__, template_folder=TEMPLATE_DIR)  # Ensure Flask finds templates
 
 @app.route("/")
 def index():
@@ -30,7 +18,7 @@ def index():
 @app.route("/settings")
 def settings():
     """Render settings page."""
-    return render_template("settings.html")  # Ensure settings.html exists in /app/templates/
+    return render_template("settings.html")  # Ensure settings.html exists
 
 @app.route("/clear_and_refresh", methods=["POST"])
 def clear_and_refresh():
