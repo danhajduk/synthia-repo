@@ -1,6 +1,6 @@
 {
     "name": "Synthia - AI Personal Assistant",
-    "version": "0.0.16",
+    "version": "0.0.16f",
     "slug": "synthia",
     "description": "Your personal AI assistant for email summaries and more.",
     "arch": ["amd64", "armv7", "armhf"],
@@ -11,7 +11,7 @@
     "panel_icon": "mdi:email",
     "panel_title": "Synthia",
     "url": "https://github.com/danhajduk/synthia-repo",
-    "changelog": "https://github.com/danhajduk/synthia-repo/blob/main/CHANGELOG.md",
+    "changelog": "https://github.com/danhajduk/synthia-repo/synthia/CHANGELOG.md",
     "options": {
       "general": {
         "log_interval": 10,

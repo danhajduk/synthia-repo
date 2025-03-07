@@ -13,7 +13,7 @@ ingress_entry: "/"
 panel_icon: "mdi:email"
 panel_title: "Synthia"
 url: "https://github.com/danhajduk/synthia-repo"
-changelog: "https://github.com/danhajduk/synthia-repo/blob/main/CHANGELOG.md"
+changelog: "https://github.com/danhajduk/synthia-repo/synthia/CHANGELOG.md"
 options:
   general:
     log_interval: 10
