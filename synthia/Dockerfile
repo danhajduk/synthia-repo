@@ -24,3 +24,4 @@ COPY . /app/
 
 # Start Synthia (it will start web.py internally)
 CMD ["python3", "/app/synthia.py"]
+ 

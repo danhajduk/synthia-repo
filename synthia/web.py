@@ -67,7 +67,7 @@ def clear_and_refresh():
         sql.clear_email_table()
         emails = gmail.fetch_unread_emails()
         sql.save_email_data(emails)  # Pass the emails dictionary
-
+ 
         logging.info("✅ Database cleared & emails refreshed.")
         return jsonify({"message": "Database cleared & emails refreshed."})
     except Exception as e:
