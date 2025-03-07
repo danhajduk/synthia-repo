@@ -4,23 +4,22 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Install dependencies
-RUN apt-get update && apt-get install -y sqlite3 && \
-    pip install --no-cache-dir \
+RUN pip install --no-cache-dir \
     requests \
     flask \
     google-auth \
     google-auth-oauthlib \
     google-auth-httplib2 \
-    google-api-python-client
+    google-api-python-client \
+    sqlite3
 
-# Ensure /data directory exists for database storage
+# Ensure /data directory exists
 RUN mkdir -p /data
 
-# Copy the scripts
+# Copy files
 COPY synthia.py /app/synthia.py
 COPY web.py /app/web.py
 COPY templates /app/templates
 
-# Set the command to run
-CMD ["python3", "/app/synthia.py"]
-    
+# Start both Synthia and Flask UI
+CMD ["sh", "-c", "python3 /app/synthia.py & python3 /app/web.py"]
