@@ -58,7 +58,7 @@ def generate_response(prompt):
     }
 
     try:
-        response = requests.post("https://api.openai.com/v1/completions", headers=headers, json=data)
+        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
         response.raise_for_status()
         result = response.json()
         return result["choices"][0]["text"].strip()
@@ -109,7 +109,7 @@ def identify_important_senders():
     # Save the identified important senders to the database
     for sender in important_senders:
         if sender.strip():
-            sql.add_important_sender(sender.strip())  # Removed 'category' argument
+            sql.add_important_sender(sender.strip(), category="Important")  # Ensure 'category' column exists
 
     logging.info(f"✅ Identified important senders: {important_senders}")
     return important_senders

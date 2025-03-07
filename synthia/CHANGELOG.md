@@ -1,13 +1,9 @@
 # Changelog
 
-## [0.0.17] - 2025-03-08
+## [0.1.0] - 2025-03-08
 ### Added
-- Added dynamic updates to the email summary and fetch status on the index page using JavaScript.
-- Added `/email_summary` endpoint to provide email summary data for dynamic updates.
-- Updated `fetch_unread_emails` function to change `fetch_status` in the metadata table.
-- Updated `web.py` to use the metadata table to get the fetch status.
-- Added timestamps to log entries.
-- Implemented periodic fetching and synchronization of emails.
-- Marked emails as read if they are no longer unread.
-- Deleted read emails from the database.
-
+- Added a new table for important senders with categories (Important/Ignored/Muted).
+- Added a function to identify important senders using OpenAI.
+- Updated the web interface to display important senders with their categories.
+- Added a button in the settings page to check senders in OpenAI.
+- Updated the version to `0.1.0`.

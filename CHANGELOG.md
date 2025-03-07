@@ -7,7 +7,7 @@
 - Updated the web interface to display important senders with their categories.
 - Added a button in the settings page to check senders in OpenAI.
 - Updated the version to `0.1.0`.
-
+ 
 ## [0.0.17] - 2025-03-08
 ### Added
 - Added dynamic updates to the email summary and fetch status on the index page using JavaScript.
