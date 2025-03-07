@@ -1,5 +1,5 @@
 name: "Synthia"
-version: "0.0.11a"
+version: "0.0.11b"
 slug: "synthia"
 description: "Your personal AI assistant for email summaries and more."
 arch:
@@ -7,6 +7,11 @@ arch:
   - armv7
   - armhf
 init: false
+ingress: true
+ingress_port: 5000
+ingress_entry: "/"
+panel_icon: "mdi:email"
+panel_title: "Synthia"
 options:
   general:
     log_interval: 10
@@ -39,3 +44,6 @@ schema:
     openai_api_key: str
   notifications:
     notify_service: str
+map:
+  - data:rw  # Allows Synthia to save data to /data
+host_network: true  # Allows network access
