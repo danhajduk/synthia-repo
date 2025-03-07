@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,101 +7,164 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Align everything to the left */
+            align-items: center;
             height: 100vh;
-            margin: 0;
-            padding: 20px;
-            background: url('/static/synthia_logo.png') no-repeat center center fixed;
-            background-size: cover;
         }
 
-        .container {
+        /* Top Navigation Bar */
+        .navbar {
             width: 100%;
+            background-color: #007bff;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-size: 20px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar .title {
+            font-weight: bold;
+        }
+
+        .navbar button {
+            padding: 10px 15px;
+            background-color: white;
+            color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .navbar button:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Main Container */
+        .container {
+            width: 90%;
             max-width: 800px;
-            background-color: rgba(255, 255, 255, 0.9);
+            margin-top: 30px;
             padding: 20px;
+            background-color: white;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        h1 {
-            margin-top: 0;
+        h2, h3 {
+            text-align: center;
         }
 
-        .email-summary {
+        /* Email Summary Cards */
+        .summary {
+            display: flex;
+            justify-content: space-around;
             margin: 20px 0;
         }
 
-        .email-summary h2 {
-            margin: 10px 0;
+        .summary-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            width: 30%;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .email-summary ul {
+        .summary-box h3 {
+            margin: 5px 0;
+            font-size: 18px;
+            color: #007bff;
+        }
+
+        .summary-box p {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Email Senders List */
+        .email-list {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .email-list ul {
             list-style-type: none;
             padding: 0;
         }
 
-        .email-summary li {
-            background-color: #f9f9f9;
-            margin: 5px 0;
+        .email-list li {
             padding: 10px;
-            border-radius: 4px;
+            background: white;
+            margin: 5px 0;
+            border-radius: 5px;
             display: flex;
             justify-content: space-between;
+            box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .email-summary li span {
-            font-weight: bold;
-        }
-
-        .menu {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .menu button {
-            padding: 10px 20px;
-            cursor: pointer;
+        .email-badge {
             background-color: #007bff;
             color: white;
-            border: none;
-            border-radius: 4px;
-        }
-
-        .menu button:hover {
-            background-color: #0056b3;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
         }
     </style>
 </head>
-
 <body>
-    <div class="menu">
-        <h1>Synthia - Email Dashboard</h1>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="title">Synthia - Email Dashboard</div>
         <button onclick="window.location.href='/settings'">Settings</button>
     </div>
 
+    <!-- Main Content -->
     <div class="container">
-        <div class="email-summary">
-            <h2>Unread Emails: {{ unread_count }}</h2>
-            <h3>Last Fetch: {{ last_fetch }}</h3>
+        <h2>Email Summary</h2>
+        <div class="summary">
+            <div class="summary-box">
+                <h3>Unread Emails</h3>
+                <p>{{ unread_count }}</p>
+            </div>
+            <div class="summary-box">
+                <h3>Last Fetch</h3>
+                <p>{{ last_fetch }}</p>
+            </div>
+            <div class="summary-box">
+                <h3>Cutoff Date</h3>
+                <p>{{ cutoff_date }}</p>
+            </div>
+        </div>
+
+        <!-- Email Senders List -->
+        <div class="email-list">
             <h3>Email Sources</h3>
             <ul>
-                {% for sender, count in senders.items() %}
-                <li>
-                    <span>{{ sender }}</span>
-                    <span>{{ count }} emails</span>
-                </li>
-                {% endfor %}
+                {% if senders %}
+                    {% for sender, count in senders.items() %}
+                        <li>
+                            <span>{{ sender }}</span>
+                            <span class="email-badge">{{ count }}</span>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <p>No senders found.</p>
+                {% endif %}
             </ul>
-            {% if not senders %}
-            <p>No senders found.</p>
-            {% endif %}
         </div>
     </div>
 </body>
-
 </html>
