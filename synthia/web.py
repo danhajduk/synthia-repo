@@ -1,3 +1,9 @@
+"""
+This module provides the web interface for Synthia using Flask.
+It includes routes for displaying the dashboard, fetching email data,
+clearing and refreshing emails, checking for updates, and managing settings.
+"""
+
 from flask import Flask, render_template, jsonify, request
 import logging
 import json
@@ -16,7 +22,12 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(me
 fetching = False  # Track if emails are being fetched
 
 def get_current_version():
-    """Get the current version from config.json"""
+    """
+    Get the current version from config.json.
+
+    Returns:
+        str: The current version, or "Unknown" if an error occurs.
+    """
     try:
         with open("/app/config.json", "r") as f:
             config = json.load(f)
@@ -27,12 +38,19 @@ def get_current_version():
 
 @app.before_request
 def log_request():
-    """Log all incoming requests for debugging."""
+    """
+    Log all incoming requests for debugging.
+    """
     logging.info(f"📥 Received request: {request.method} {request.path} from {request.remote_addr}")
 
 @app.route("/")
 def index():
-    """Render main dashboard."""
+    """
+    Render main dashboard.
+
+    Returns:
+        str: Rendered HTML of the main dashboard.
+    """
     logging.info("✅ Rendering index.html")
     
     try:
@@ -49,19 +67,34 @@ def index():
 
 @app.route("/settings")
 def settings():
-    """Render settings page."""
+    """
+    Render settings page.
+
+    Returns:
+        str: Rendered HTML of the settings page.
+    """
     logging.info("✅ Rendering settings.html")
     return render_template("settings.html")
 
 @app.route("/fetch_status")
 def fetch_status():
-    """Return the current email fetching status."""
+    """
+    Return the current email fetching status.
+
+    Returns:
+        json: JSON object containing the fetch status.
+    """
     status = sql.get_metadata("fetch_status") or "✅ Ready"
     return jsonify({"status": status})
 
 @app.route("/email_summary")
 def email_summary():
-    """Return the current email summary."""
+    """
+    Return the current email summary.
+
+    Returns:
+        json: JSON object containing the email summary.
+    """
     try:
         senders = sql.get_email_data()
         unread_count = sum(senders.values())
@@ -84,7 +117,12 @@ def email_summary():
 
 @app.route("/clear_and_refresh", methods=["POST"])
 def clear_and_refresh():
-    """Clear email table and fetch new emails."""
+    """
+    Clear email table and fetch new emails.
+
+    Returns:
+        json: JSON object containing the result message.
+    """
     global fetching
     try:
         fetching = True  # Set status to fetching
@@ -104,14 +142,25 @@ def clear_and_refresh():
 
 @app.route("/check_update", methods=["POST"])
 def check_update():
-    """Check for updates and restart if needed."""
+    """
+    Check for updates and restart if needed.
+
+    Returns:
+        json: JSON object containing the result message.
+    """
     latest_version = update.get_latest_version()
     if (latest_version and update.update_config(latest_version)):
-        return jsonify({"message": f"Updated to {latest_version}, restarting..."})
+        return jsonify({"message": f"Updated to {latest_version, restarting..."})
     return jsonify({"message": "Already up to date."})
 
 @app.route('/recreate_table', methods=['POST'])
 def recreate_table():
+    """
+    Drop and recreate the email table.
+
+    Returns:
+        json: JSON object containing the result message.
+    """
     try:
         sql.recreate_table()
         return jsonify({"message": "Email table recreated successfully."})
@@ -120,6 +169,12 @@ def recreate_table():
 
 @app.route('/toggle_debug', methods=['POST'])
 def toggle_debug():
+    """
+    Toggle the debug state in the configuration.
+
+    Returns:
+        json: JSON object containing the result message.
+    """
     try:
         data = request.json
         debug = data.get('debug', False)
@@ -134,6 +189,12 @@ def toggle_debug():
 
 @app.route('/get_debug_state', methods=['GET'])
 def get_debug_state():
+    """
+    Get the current debug state from the configuration.
+
+    Returns:
+        json: JSON object containing the debug state.
+    """
     try:
         with open("/app/config.yaml", "r") as f:
             config = yaml.safe_load(f)
@@ -143,7 +204,9 @@ def get_debug_state():
         return jsonify({"message": f"Error retrieving debug state: {e}"}), 500
 
 def periodic_fetch():
-    """Periodically fetch emails and synchronize the database."""
+    """
+    Periodically fetch emails and synchronize the database.
+    """
     while True:
         try:
             logging.info("⏳ Periodic fetch started.")
@@ -158,7 +221,9 @@ def periodic_fetch():
             time.sleep(600)  # Fetch every 10 minutes
 
 def run():
-    """Run the Flask web server on port 5000."""
+    """
+    Run the Flask web server on port 5000.
+    """
     logging.info("🚀 Starting Flask web server on port 5000")
     threading.Thread(target=periodic_fetch, daemon=True).start()
     app.run(host="0.0.0.0", port=5000, debug=False)

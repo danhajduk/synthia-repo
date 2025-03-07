@@ -1,3 +1,9 @@
+"""
+This module serves as the main entry point for Synthia.
+It includes functions to load configuration, log directory structure,
+and run the main loop to check and save emails.
+"""
+
 import time
 import logging
 import os
@@ -21,8 +27,13 @@ logging.basicConfig(
     level=log_level
 )
 
+# Set a higher log level for googleapiclient to reduce verbosity
+logging.getLogger('googleapiclient').setLevel(logging.WARNING)
+
 def log_directory_structure():
-    """Log the directory structure for debugging."""
+    """
+    Log the directory structure for debugging.
+    """
     logging.debug(f"Current working directory: {os.getcwd()}")
 
     directories = ["/", "/app", "/data"]
@@ -36,7 +47,9 @@ def log_directory_structure():
             logging.error(f"Could not list {directory}: {e}")
 
 def main_loop():
-    """Main loop to check and save emails."""
+    """
+    Main loop to check and save emails.
+    """
     while True:
         logging.info("Checking for unread emails...")
         sql.check_table_structure()  # Ensure the table structure is correct

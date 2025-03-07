@@ -1,3 +1,9 @@
+"""
+This module provides functionality to interact with the SQLite database used by Synthia.
+It includes functions to connect to the database, create tables, save and retrieve email data,
+and manage metadata.
+"""
+
 import sqlite3
 import logging
 import os
@@ -10,7 +16,12 @@ DB_PATH = "/data/synthia.db"
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 def connect_db():
-    """Ensure database exists, create table if not, and establish connection."""
+    """
+    Ensure database exists, create tables if not, and establish connection.
+
+    Returns:
+        sqlite3.Connection: A connection object to the SQLite database.
+    """
     try:
         conn = sqlite3.connect(DB_PATH, timeout=10)
         cursor = conn.cursor()
@@ -39,7 +50,9 @@ def connect_db():
         return None
 
 def create_table():
-    """Create tables in Synthia's database if they don't exist."""
+    """
+    Create tables in Synthia's database if they don't exist.
+    """
     conn = connect_db()
     if conn is None:
         logging.error("Could not establish database connection.")
@@ -66,7 +79,9 @@ def create_table():
     logging.info("Tables 'synthia_emails' and 'synthia_metadata' created or already exist.")
 
 def clear_email_table():
-    """Clear the email table to reset data."""
+    """
+    Clear the email table to reset data.
+    """
     conn = connect_db()
     if conn is None:
         logging.error("Could not connect to database to clear emails.")
@@ -78,7 +93,12 @@ def clear_email_table():
     logging.info("Email table cleared.")
 
 def save_email_data(emails):
-    """Save email data to Synthia's database."""
+    """
+    Save email data to Synthia's database.
+
+    Args:
+        emails (dict): A dictionary containing email data to be saved.
+    """
     logging.info("💾 Saving email data to the database...")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -108,7 +128,12 @@ def save_email_data(emails):
         logging.info("🔒 Database connection closed.")
 
 def get_email_data():
-    """Retrieve email summary information from the database."""
+    """
+    Retrieve email summary information from the database.
+
+    Returns:
+        dict: A dictionary containing email summary information.
+    """
     logging.info("📥 Fetching email data from the database...")
 
     try:
@@ -139,7 +164,13 @@ def get_email_data():
         return {}
 
 def update_email_status(email_id, unread_count):
-    """Update the unread status of an email in the database."""
+    """
+    Update the unread status of an email in the database.
+
+    Args:
+        email_id (str): The ID of the email to update.
+        unread_count (int): The new unread count for the email.
+    """
     conn = connect_db()
     if conn is None:
         logging.error("Could not establish database connection.")
@@ -155,7 +186,9 @@ def update_email_status(email_id, unread_count):
     logging.info(f"Email {email_id} status updated to unread_count={unread_count}.")
 
 def delete_read_emails():
-    """Delete emails from the database that are no longer unread."""
+    """
+    Delete emails from the database that are no longer unread.
+    """
     conn = connect_db()
     if conn is None:
         logging.error("Could not establish database connection.")
@@ -170,7 +203,9 @@ def delete_read_emails():
     logging.info("Read emails deleted from the database.")
 
 def recreate_table():
-    """Drop and recreate the email table."""
+    """
+    Drop and recreate the email table.
+    """
     conn = connect_db()
     if conn is None:
         logging.error("Could not establish database connection.")
@@ -182,7 +217,15 @@ def recreate_table():
     logging.info("Table 'synthia_emails' recreated.")
 
 def get_metadata(key):
-    """Retrieve metadata value from the database."""
+    """
+    Retrieve metadata value from the database.
+
+    Args:
+        key (str): The key of the metadata to retrieve.
+
+    Returns:
+        str: The value of the metadata, or None if not found.
+    """
     logging.info(f"📥 Fetching metadata for key: {key}")
 
     try:
@@ -208,7 +251,13 @@ def get_metadata(key):
         return None
 
 def set_metadata(key, value):
-    """Set metadata value in the database."""
+    """
+    Set metadata value in the database.
+
+    Args:
+        key (str): The key of the metadata to set.
+        value (str): The value of the metadata to set.
+    """
     logging.info(f"💾 Setting metadata for key: {key} to value: {value}")
 
     try:

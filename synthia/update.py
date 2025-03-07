@@ -1,3 +1,8 @@
+"""
+This module provides functionality to update the Synthia add-on by checking for the latest version
+from GitHub releases and updating the configuration file accordingly.
+"""
+
 import requests
 import json
 import os
@@ -10,7 +15,12 @@ CONFIG_PATH = "/data/options.json"
 logging.basicConfig(level=logging.INFO)
 
 def get_latest_version():
-    """Fetch the latest version from GitHub releases."""
+    """
+    Fetch the latest version from GitHub releases.
+
+    Returns:
+        str: The latest version tag, or None if an error occurs.
+    """
     url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
     try:
         response = requests.get(url, timeout=10)
@@ -21,7 +31,15 @@ def get_latest_version():
         return None
 
 def update_config(new_version):
-    """Update config.json with the latest version."""
+    """
+    Update config.json with the latest version.
+
+    Args:
+        new_version (str): The latest version tag.
+
+    Returns:
+        bool: True if the configuration was updated, False otherwise.
+    """
     try:
         with open(CONFIG_PATH, "r") as f:
             config = json.load(f)

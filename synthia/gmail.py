@@ -1,3 +1,9 @@
+"""
+This module provides functionality to interact with the Gmail API.
+It includes functions to load configuration, authenticate with Gmail,
+and fetch unread emails from the last 7 days.
+"""
+
 import logging
 import datetime
 import json
@@ -13,7 +19,12 @@ SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 def load_gmail_config():
-    """Load Gmail API credentials from the configuration file."""
+    """
+    Load Gmail API credentials from the configuration file.
+
+    Returns:
+        dict: A dictionary containing Gmail configuration.
+    """
     try:
         with open("/data/options.json", "r") as f:
             config = json.load(f)
@@ -24,7 +35,12 @@ def load_gmail_config():
         return {}
 
 def authenticate_gmail():
-    """Authenticate with Gmail API using credentials from the configuration."""
+    """
+    Authenticate with Gmail API using credentials from the configuration.
+
+    Returns:
+        googleapiclient.discovery.Resource: A Gmail API service resource.
+    """
     config = load_gmail_config()
     if not config:
         logging.error("❌ Gmail configuration is missing.")
@@ -51,7 +67,12 @@ def authenticate_gmail():
         return None
 
 def fetch_unread_emails():
-    """Fetch unread emails from Gmail from the last 7 days."""
+    """
+    Fetch unread emails from Gmail from the last 7 days.
+
+    Returns:
+        dict: A dictionary containing email data.
+    """
     logging.info("📥 Fetching unread emails from Gmail...")
     sql.set_metadata("fetch_status", "📩 Fetching emails...")
 

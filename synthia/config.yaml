@@ -20,7 +20,7 @@ options:
     fetch_interval_minutes: 10
     days_to_fetch: 7
     custom_message: "Synthia is on"
-    debug: false  # Add debug switch
+    debug: false  # Set debug to false to reduce log verbosity
   gmail:
     enable_gmail: true
     gmail_api_key: ""
