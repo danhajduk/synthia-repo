@@ -118,7 +118,7 @@ def clear_email_table():
     conn.commit()
     conn.close()
     logging.info("Email table cleared.")
-
+    
 def email_exists(email_id):
     """Check if an email with the given ID already exists in the database."""
     conn = sqlite3.connect(DB_PATH)

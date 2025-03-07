@@ -32,7 +32,7 @@ def main_loop():
         sql.check_table_structure()  # Ensure the table structure is correct
         emails = gmail.fetch_unread_emails()
         if emails:
-            sql.save_email_data(emails)
+            sql.save_email_data(emails)  # Pass the emails dictionary
             logging.info("Email data successfully saved to Synthia's database.")
         else:
             logging.info("No new emails found.")

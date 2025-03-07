@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 import logging
-import json
+import yaml
 import sql
 import gmail
 import update  # Import the update script
@@ -14,10 +14,11 @@ fetching = False  # Track if emails are being fetched
 
 
 def get_current_version():
-    """Get the current version from options.json"""
+    """Get the current version from config.yaml"""
     try:
-        with open("/data/options.json", "r") as f:
-            return json.load(f).get("version", "Unknown")
+        with open("/app/config.yaml", "r") as f:
+            config = yaml.safe_load(f)
+            return config.get("version", "Unknown")
     except Exception as e:
         logging.error(f"Error reading version: {e}")
         return "Unknown"
@@ -65,12 +66,7 @@ def clear_and_refresh():
         fetching = True  # Set status to fetching
         sql.clear_email_table()
         emails = gmail.fetch_unread_emails()
-
-        if emails:
-            sender_counts = {}
-            for email in emails:
-                sender_counts[email] = sender_counts.get(email, 0) + 1
-            sql.save_email_data(len(emails), sender_counts)
+        sql.save_email_data(emails)  # Pass the emails dictionary
 
         logging.info("✅ Database cleared & emails refreshed.")
         return jsonify({"message": "Database cleared & emails refreshed."})
@@ -86,7 +82,7 @@ def check_update():
     """Check for updates and restart if needed."""
     latest_version = update.get_latest_version()
     if latest_version and update.update_config(latest_version):
-        return jsonify({"message": f"Updated to {latest_version}, restarting..."})
+        return jsonify({"message": f"Updated to {latest_version, restarting..."})
     return jsonify({"message": "Already up to date."})
 
 
