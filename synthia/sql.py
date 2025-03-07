@@ -91,7 +91,7 @@ def save_email_data(unread_count, sender_counts):
     finally:
         conn.close()
         logging.info("🔒 Database connection closed.")
-        
+
 def get_email_data():
     """Retrieve unread email count and sender information from the database."""
     logging.info("📥 Fetching email data from the database...")
@@ -103,35 +103,37 @@ def get_email_data():
 
         # Ensure table exists
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS email_data (
+            CREATE TABLE IF NOT EXISTS synthia_emails (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT,
                 unread_count INTEGER,
-                senders TEXT
+                sender TEXT,
+                email_count INTEGER
             )
         """)
         conn.commit()
-        logging.info("✅ Ensured 'email_data' table exists.")
+        logging.info("✅ Ensured 'synthia_emails' table exists.")
 
-        # Fetch the latest email data
-        cursor.execute("SELECT unread_count, senders FROM email_data ORDER BY id DESC LIMIT 1")
-        row = cursor.fetchone()
+        # Fetch all email data
+        cursor.execute("SELECT unread_count, sender, email_count FROM synthia_emails ORDER BY id DESC")
+        rows = cursor.fetchall()
         conn.close()
-        
-        if row:
-            unread_count = row[0]
-            logging.info(f"📩 Retrieved unread_count: {unread_count}")
 
-            try:
-                senders = json.loads(row[1]) if row[1] else {}
-                logging.info(f"📨 Retrieved senders: {senders}")
-            except json.JSONDecodeError:
-                logging.error("❌ Error decoding senders JSON.")
-                senders = {}
+        if rows:
+            logging.info(f"🔎 Retrieved {len(rows)} rows from database.")
+            unread_count = rows[0][0]  # Use first row's unread count
+            senders = {}
 
+            for row in rows:
+                sender = row[1]
+                count = row[2]
+                senders[sender] = senders.get(sender, 0) + count
+
+            logging.info(f"📩 Data sent to UI: unread_count={unread_count}, senders={json.dumps(senders, indent=2)}")
             return unread_count, senders
-        
+
         logging.warning("⚠️ No email data found in the database.")
-        return 0, {}  # Default values if no data is found
+        return 0, {}
 
     except sqlite3.Error as e:
         logging.error(f"❌ Database error: {e}")
