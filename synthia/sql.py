@@ -65,32 +65,32 @@ def save_email_data(unread_count, sender_counts):
     logging.info("Email data successfully saved to Synthia's database.")
 
 def get_email_data():
-    """Fetch email summary data from the database."""
-    conn = connect_db()
-    if conn is None:
-        logging.error("Could not connect to database for reading.")
-        return {
-            "unread_count": 0,
-            "last_fetch": "Never",
-            "cutoff_date": "N/A",
-            "senders": []
-        }
-
+    """Retrieve unread email count and sender information from the database."""
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Fetch latest unread count and timestamp
-    cursor.execute("SELECT timestamp, unread_count FROM synthia_emails ORDER BY id DESC LIMIT 1")
-    latest = cursor.fetchone()
-    
-    # Fetch senders sorted by count
-    cursor.execute("SELECT sender, SUM(email_count) FROM synthia_emails GROUP BY sender ORDER BY SUM(email_count) DESC")
-    senders = [{"sender": row[0], "count": row[1]} for row in cursor.fetchall()]
+    # Ensure table exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS email_data (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            unread_count INTEGER,
+            senders TEXT
+        )
+    """)
 
+    # Fetch the latest email data
+    cursor.execute("SELECT unread_count, senders FROM email_data ORDER BY id DESC LIMIT 1")
+    row = cursor.fetchone()
     conn.close()
 
-    return {
-        "unread_count": latest[1] if latest else 0,
-        "last_fetch": latest[0] if latest else "Never",
-        "cutoff_date": "Last 7 Days",
-        "senders": senders
-    }
+    if row:
+        unread_count = row[0]
+        try:
+            senders = json.loads(row[1]) if row[1] else {}
+        except json.JSONDecodeError:
+            logging.error("Error decoding senders JSON.")
+            senders = {}
+
+        return unread_count, senders
+    
+    return 0, {}  # Default values if no data is found

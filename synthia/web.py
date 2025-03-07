@@ -33,7 +33,13 @@ def log_request():
 def index():
     """Render main dashboard."""
     logging.info("✅ Rendering index.html")
-    unread_count, senders = sql.get_email_data()
+    
+    try:
+        unread_count, senders = sql.get_email_data()
+    except ValueError as e:
+        logging.error(f"❌ Error retrieving email data: {e}")
+        unread_count, senders = 0, {}
+
     return render_template("index.html", version=get_current_version(), unread_count=unread_count, senders=senders)
 
 
