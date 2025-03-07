@@ -6,38 +6,63 @@ import json
 # Database Path
 DB_PATH = "/data/synthia.db"
 
+# Table structures
+TABLES = {
+    "synthia_emails": '''
+        CREATE TABLE IF NOT EXISTS synthia_emails (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            email_id TEXT UNIQUE,
+            sender TEXT,
+            recipient TEXT,
+            subject TEXT,
+            unread_count INTEGER,
+            analyzed BOOLEAN DEFAULT 0,
+            category TEXT DEFAULT 'unknown'
+        )
+    ''',
+    "synthia_email_summary": '''
+        CREATE TABLE IF NOT EXISTS synthia_email_summary (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sender TEXT,
+            email_count INTEGER
+        )
+    ''',
+    "synthia_safe_senders": '''
+        CREATE TABLE IF NOT EXISTS synthia_safe_senders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sender TEXT UNIQUE
+        )
+    '''
+}
+
+EXPECTED_COLUMNS = {
+    "synthia_emails": {
+        "id": "INTEGER",
+        "timestamp": "TEXT",
+        "email_id": "TEXT",
+        "sender": "TEXT",
+        "recipient": "TEXT",
+        "subject": "TEXT",
+        "unread_count": "INTEGER",
+        "analyzed": "BOOLEAN",
+        "category": "TEXT"
+    },
+    "synthia_email_summary": {
+        "id": "INTEGER",
+        "sender": "TEXT",
+        "email_count": "INTEGER"
+    }
+}
+
 def connect_db():
     """Ensure database exists, create tables if not, and establish connection."""
     try:
         conn = sqlite3.connect(DB_PATH, timeout=10)
         cursor = conn.cursor()
         # Create tables if they don't exist
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS synthia_emails (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT,
-                email_id TEXT UNIQUE,
-                sender TEXT,
-                recipient TEXT,
-                subject TEXT,
-                unread_count INTEGER,
-                analyzed BOOLEAN DEFAULT 0,
-                category TEXT DEFAULT 'unknown'
-            )
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS synthia_email_summary (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sender TEXT,
-                email_count INTEGER
-            )
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS synthia_safe_senders (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sender TEXT UNIQUE
-            )
-        ''')
+        for table_sql in TABLES.values():
+            cursor.execute(table_sql)
         conn.commit()
         logging.info(f"✅ Connected to database and ensured tables exist: {DB_PATH}")
         return conn
@@ -53,81 +78,34 @@ def check_table_structure():
         return
 
     cursor = conn.cursor()
-    cursor.execute("PRAGMA table_info(synthia_emails)")
-    columns = cursor.fetchall()
-    expected_columns = {
-        "id": "INTEGER",
-        "timestamp": "TEXT",
-        "email_id": "TEXT",
-        "sender": "TEXT",
-        "recipient": "TEXT",
-        "subject": "TEXT",
-        "unread_count": "INTEGER",
-        "analyzed": "BOOLEAN",
-        "category": "TEXT"
-    }
-
-    cursor.execute("PRAGMA table_info(synthia_email_summary)")
-    columns_summary = cursor.fetchall()
-    expected_columns_summary = {
-        "id": "INTEGER",
-        "sender": "TEXT",
-        "email_count": "INTEGER"
-    }
-
     logging.info("Checking table structure...")
-    # Check if all expected columns are present and have the correct type
-    for column in columns:
-        name, col_type = column[1], column[2]
-        if name not in expected_columns or expected_columns[name] != col_type:
-            logging.warning(f"Column {name} has incorrect type {col_type}. Expected {expected_columns[name]}.")
-            break
-    else:
-        for column in columns_summary:
+
+    for table_name, expected_columns in EXPECTED_COLUMNS.items():
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns = cursor.fetchall()
+        for column in columns:
             name, col_type = column[1], column[2]
-            if name not in expected_columns_summary or expected_columns_summary[name] != col_type:
-                logging.warning(f"Column {name} has incorrect type {col_type}. Expected {expected_columns_summary[name]}.")
+            if name not in expected_columns or expected_columns[name] != col_type:
+                logging.warning(f"Column {name} in table {table_name} has incorrect type {col_type}. Expected {expected_columns[name]}.")
                 break
         else:
-            logging.info("Table structure is correct.")
-            conn.close()
-            return
+            continue
+        break
+    else:
+        logging.info("Table structure is correct.")
+        conn.close()
+        return
 
     # If the structure is incorrect, drop and recreate the tables
     logging.warning("Table structure is incorrect. Recreating tables.")
-    cursor.execute("DROP TABLE IF EXISTS synthia_emails")
-    cursor.execute("DROP TABLE IF EXISTS synthia_email_summary")
-    cursor.execute("DROP TABLE IF EXISTS synthia_safe_senders")
+    for table_name in TABLES.keys():
+        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     conn.commit()
-    cursor.execute('''
-        CREATE TABLE synthia_emails (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            email_id TEXT UNIQUE,
-            sender TEXT,
-            recipient TEXT,
-            subject TEXT,
-            unread_count INTEGER,
-            analyzed BOOLEAN DEFAULT 0,
-            category TEXT DEFAULT 'unknown'
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE synthia_email_summary (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sender TEXT,
-            email_count INTEGER
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE synthia_safe_senders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sender TEXT UNIQUE
-        )
-    ''')
+    for table_sql in TABLES.values():
+        cursor.execute(table_sql)
     conn.commit()
     conn.close()
-    logging.info("Tables 'synthia_emails', 'synthia_email_summary', and 'synthia_safe_senders' recreated.")
+    logging.info("Tables recreated.")
 
 def create_table():
     """Create tables in Synthia's database if they don't exist."""
@@ -136,35 +114,11 @@ def create_table():
         logging.error("Could not establish database connection.")
         return
     cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS synthia_emails (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            email_id TEXT UNIQUE,
-            sender TEXT,
-            recipient TEXT,
-            subject TEXT,
-            unread_count INTEGER,
-            analyzed BOOLEAN DEFAULT 0,
-            category TEXT DEFAULT 'unknown'
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS synthia_email_summary (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sender TEXT,
-            email_count INTEGER
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS synthia_safe_senders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sender TEXT UNIQUE
-        )
-    ''')
+    for table_sql in TABLES.values():
+        cursor.execute(table_sql)
     conn.commit()
     conn.close()
-    logging.info("Tables 'synthia_emails', 'synthia_email_summary', and 'synthia_safe_senders' created or already exist.")
+    logging.info("Tables created or already exist.")
     check_table_structure()
 
 def clear_email_table():
@@ -246,32 +200,8 @@ def get_email_data():
         logging.info(f"✅ Connected to database: {DB_PATH}")
 
         # Ensure tables exist
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS synthia_emails (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT,
-                email_id TEXT UNIQUE,
-                sender TEXT,
-                recipient TEXT,
-                subject TEXT,
-                unread_count INTEGER,
-                analyzed BOOLEAN DEFAULT 0,
-                category TEXT DEFAULT 'unknown'
-            )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS synthia_email_summary (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sender TEXT,
-                email_count INTEGER
-            )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS synthia_safe_senders (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sender TEXT UNIQUE
-            )
-        """)
+        for table_sql in TABLES.values():
+            cursor.execute(table_sql)
         conn.commit()
         logging.info("✅ Ensured tables exist.")
 
@@ -304,36 +234,11 @@ def recreate_table():
         logging.error("Could not establish database connection.")
         return
     cursor = conn.cursor()
-    cursor.execute("DROP TABLE IF EXISTS synthia_emails")
-    cursor.execute("DROP TABLE IF EXISTS synthia_email_summary")
-    cursor.execute("DROP TABLE IF EXISTS synthia_safe_senders")
+    for table_name in TABLES.keys():
+        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     conn.commit()
-    cursor.execute('''
-        CREATE TABLE synthia_emails (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            email_id TEXT UNIQUE,
-            sender TEXT,
-            recipient TEXT,
-            subject TEXT,
-            unread_count INTEGER,
-            analyzed BOOLEAN DEFAULT 0,
-            category TEXT DEFAULT 'unknown'
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE synthia_email_summary (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sender TEXT,
-            email_count INTEGER
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE synthia_safe_senders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sender TEXT UNIQUE
-        )
-    ''')
+    for table_sql in TABLES.values():
+        cursor.execute(table_sql)
     conn.commit()
     conn.close()
-    logging.info("Tables 'synthia_emails', 'synthia_email_summary', and 'synthia_safe_senders' recreated.")
+    logging.info("Tables recreated.")

@@ -12,4 +12,5 @@
 - Added debugging logs to identify and fix the issue with saving email data.
 - Fixed SQL syntax issues to ensure proper table creation.
 - Added `email_count` column to the expected columns in `check_table_structure`.
+- Defined table structures and expected columns as variables in `sql.py`.
 
