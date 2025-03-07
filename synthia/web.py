@@ -33,7 +33,8 @@ def log_request():
 def index():
     """Render main dashboard."""
     logging.info("✅ Rendering index.html")
-    return render_template("index.html", version=get_current_version())
+    unread_count, senders = sql.get_email_data()
+    return render_template("index.html", version=get_current_version(), unread_count=unread_count, senders=senders)
 
 
 @app.route("/settings")
