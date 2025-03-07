@@ -20,7 +20,7 @@ def connect_db():
                 sender TEXT,
                 recipient TEXT,
                 subject TEXT,
-                unread_count INTEGER,  # Add unread_count column
+                unread_count INTEGER,
                 analyzed BOOLEAN DEFAULT 0,
                 category TEXT DEFAULT 'unknown'
             )
@@ -62,7 +62,7 @@ def check_table_structure():
         "sender": "TEXT",
         "recipient": "TEXT",
         "subject": "TEXT",
-        "unread_count": "INTEGER",  # Add unread_count column
+        "unread_count": "INTEGER",
         "analyzed": "BOOLEAN",
         "category": "TEXT"
     }
@@ -92,7 +92,7 @@ def check_table_structure():
             sender TEXT,
             recipient TEXT,
             subject TEXT,
-            unread_count INTEGER,  # Add unread_count column
+            unread_count INTEGER,
             analyzed BOOLEAN DEFAULT 0,
             category TEXT DEFAULT 'unknown'
         )
@@ -129,7 +129,7 @@ def create_table():
             sender TEXT,
             recipient TEXT,
             subject TEXT,
-            unread_count INTEGER,  # Add unread_count column
+            unread_count INTEGER,
             analyzed BOOLEAN DEFAULT 0,
             category TEXT DEFAULT 'unknown'
         )
@@ -239,7 +239,7 @@ def get_email_data():
                 sender TEXT,
                 recipient TEXT,
                 subject TEXT,
-                unread_count INTEGER,  # Add unread_count column
+                unread_count INTEGER,
                 analyzed BOOLEAN DEFAULT 0,
                 category TEXT DEFAULT 'unknown'
             )
@@ -301,7 +301,7 @@ def recreate_table():
             sender TEXT,
             recipient TEXT,
             subject TEXT,
-            unread_count INTEGER,  # Add unread_count column
+            unread_count INTEGER,
             analyzed BOOLEAN DEFAULT 0,
             category TEXT DEFAULT 'unknown'
         )
