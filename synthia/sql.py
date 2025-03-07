@@ -24,7 +24,7 @@ TABLES = {
     "synthia_email_summary": '''
         CREATE TABLE IF NOT EXISTS synthia_email_summary (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sender TEXT,
+            sender TEXT UNIQUE,
             email_count INTEGER
         )
     ''',
