@@ -64,33 +64,57 @@ def save_email_data(unread_count, sender_counts):
     conn.close()
     logging.info("Email data successfully saved to Synthia's database.")
 
+import logging
+import sqlite3
+import json
+
+DB_PATH = "/data/synthia.db"
+
 def get_email_data():
     """Retrieve unread email count and sender information from the database."""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    # Ensure table exists
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS email_data (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            unread_count INTEGER,
-            senders TEXT
-        )
-    """)
+    logging.info("📥 Fetching email data from the database...")
 
-    # Fetch the latest email data
-    cursor.execute("SELECT unread_count, senders FROM email_data ORDER BY id DESC LIMIT 1")
-    row = cursor.fetchone()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        logging.info(f"✅ Connected to database: {DB_PATH}")
 
-    if row:
-        unread_count = row[0]
-        try:
-            senders = json.loads(row[1]) if row[1] else {}
-        except json.JSONDecodeError:
-            logging.error("Error decoding senders JSON.")
-            senders = {}
+        # Ensure table exists
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS email_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                unread_count INTEGER,
+                senders TEXT
+            )
+        """)
+        conn.commit()
+        logging.info("✅ Ensured 'email_data' table exists.")
 
-        return unread_count, senders
-    
-    return 0, {}  # Default values if no data is found
+        # Fetch the latest email data
+        cursor.execute("SELECT unread_count, senders FROM email_data ORDER BY id DESC LIMIT 1")
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            unread_count = row[0]
+            logging.info(f"📩 Retrieved unread_count: {unread_count}")
+
+            try:
+                senders = json.loads(row[1]) if row[1] else {}
+                logging.info(f"📨 Retrieved senders: {senders}")
+            except json.JSONDecodeError:
+                logging.error("❌ Error decoding senders JSON.")
+                senders = {}
+
+            return unread_count, senders
+        
+        logging.warning("⚠️ No email data found in the database.")
+        return 0, {}  # Default values if no data is found
+
+    except sqlite3.Error as e:
+        logging.error(f"❌ Database error: {e}")
+        return 0, {}
+
+    except Exception as e:
+        logging.error(f"❌ Unexpected error: {e}")
+        return 0, {}
