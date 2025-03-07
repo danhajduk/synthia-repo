@@ -336,3 +336,4 @@ def recreate_table():
     conn.commit()
     conn.close()
     logging.info("Tables 'synthia_emails', 'synthia_email_summary', and 'synthia_safe_senders' recreated.")
+    
