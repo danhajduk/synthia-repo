@@ -1,6 +1,6 @@
 {
     "name": "Synthia - AI Personal Assistant",
-    "version": "0.0.12n",
+    "version": "0.0.12o",
     "slug": "synthia",
     "description": "Your personal AI assistant for email summaries and more.",
     "arch": ["amd64", "armv7", "armhf"],
