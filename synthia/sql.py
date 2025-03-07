@@ -63,3 +63,34 @@ def save_email_data(unread_count, sender_counts):
     conn.commit()
     conn.close()
     logging.info("Email data successfully saved to Synthia's database.")
+
+def get_email_data():
+    """Fetch email summary data from the database."""
+    conn = connect_db()
+    if conn is None:
+        logging.error("Could not connect to database for reading.")
+        return {
+            "unread_count": 0,
+            "last_fetch": "Never",
+            "cutoff_date": "N/A",
+            "senders": []
+        }
+
+    cursor = conn.cursor()
+    
+    # Fetch latest unread count and timestamp
+    cursor.execute("SELECT timestamp, unread_count FROM synthia_emails ORDER BY id DESC LIMIT 1")
+    latest = cursor.fetchone()
+    
+    # Fetch senders sorted by count
+    cursor.execute("SELECT sender, SUM(email_count) FROM synthia_emails GROUP BY sender ORDER BY SUM(email_count) DESC")
+    senders = [{"sender": row[0], "count": row[1]} for row in cursor.fetchall()]
+
+    conn.close()
+
+    return {
+        "unread_count": latest[1] if latest else 0,
+        "last_fetch": latest[0] if latest else "Never",
+        "cutoff_date": "Last 7 Days",
+        "senders": senders
+    }

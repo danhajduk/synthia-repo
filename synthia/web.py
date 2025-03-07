@@ -3,12 +3,12 @@ import logging
 import sql
 import gmail
 
-app = Flask(__name__, template_folder="/app/templates")  # Ensure correct template path
+app = Flask(__name__, template_folder="/app/templates")  # Ensure Flask finds templates
 
 def get_email_data():
     """Fetch email summary data from the database."""
     try:
-        data = sql.get_email_data()
+        data = sql.get_email_data()  # Ensure this function exists in sql.py
         if isinstance(data["senders"], list):
             data["senders"] = {sender["sender"]: sender["count"] for sender in data["senders"]}
         return data
@@ -30,7 +30,7 @@ def index():
 @app.route("/settings")
 def settings():
     """Render settings page."""
-    return render_template("settings.html")
+    return render_template("settings.html")  # Ensure settings.html exists in /app/templates/
 
 @app.route("/clear_and_refresh", methods=["POST"])
 def clear_and_refresh():
