@@ -3,34 +3,19 @@ import logging
 import sql
 import gmail
 
-app = Flask(__name__, template_folder="/app/templates")  # Ensure Flask finds templates
-
-def get_email_data():
-    """Fetch email summary data from the database."""
-    try:
-        data = sql.get_email_data()  # Ensure this function exists in sql.py
-        if isinstance(data["senders"], list):
-            data["senders"] = {sender["sender"]: sender["count"] for sender in data["senders"]}
-        return data
-    except Exception as e:
-        logging.error(f"Error fetching email data: {e}")
-        return {
-            "unread_count": 0,
-            "last_fetch": "Never",
-            "cutoff_date": "N/A",
-            "senders": {}
-        }
+TEMPLATE_DIR = "/app/templates"  # Explicit path
+app = Flask(__name__, template_folder=TEMPLATE_DIR)
 
 @app.route("/")
 def index():
     """Render main dashboard."""
-    data = get_email_data()  # Ensure the function is correctly defined
+    data = sql.get_email_data()
     return render_template("index.html", **data)
 
 @app.route("/settings")
 def settings():
     """Render settings page."""
-    return render_template("settings.html")  # Ensure settings.html exists in /app/templates/
+    return render_template("settings.html")  # Ensure settings.html exists
 
 @app.route("/clear_and_refresh", methods=["POST"])
 def clear_and_refresh():
