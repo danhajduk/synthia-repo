@@ -3,7 +3,7 @@ FROM python:3.10-slim
 # Set up working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (SQLite3)
 RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
