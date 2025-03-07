@@ -37,8 +37,9 @@ def index():
     logging.info("✅ Rendering index.html")
     
     try:
-        unread_count, senders = sql.get_email_data()
-    except ValueError as e:
+        senders = sql.get_email_data()
+        unread_count = sum(senders.values())
+    except Exception as e:
         logging.error(f"❌ Error retrieving email data: {e}")
         unread_count, senders = 0, {}
 
