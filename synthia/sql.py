@@ -226,19 +226,3 @@ def get_email_data():
     except Exception as e:
         logging.error(f"❌ Unexpected error: {e}")
         return {}
-
-def recreate_table():
-    """Drop and recreate the email tables."""
-    conn = connect_db()
-    if conn is None:
-        logging.error("Could not establish database connection.")
-        return
-    cursor = conn.cursor()
-    for table_name in TABLES.keys():
-        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
-    conn.commit()
-    for table_sql in TABLES.values():
-        cursor.execute(table_sql)
-    conn.commit()
-    conn.close()
-    logging.info("Tables recreated.")
