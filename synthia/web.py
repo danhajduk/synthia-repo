@@ -90,6 +90,15 @@ def check_update():
     return jsonify({"message": "Already up to date."})
 
 
+@app.route('/recreate_table', methods=['POST'])
+def recreate_table():
+    try:
+        sql.recreate_table()
+        return jsonify({"message": "Email table recreated successfully."})
+    except Exception as e:
+        return jsonify({"message": f"Error recreating table: {e}"}), 500
+
+
 def run():
     """Run the Flask web server on port 5000."""
     logging.info("🚀 Starting Flask web server on port 5000")

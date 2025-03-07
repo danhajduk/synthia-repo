@@ -60,6 +60,19 @@
 
         .update-button { background-color: green; }
         .update-button:hover { background-color: darkgreen; }
+
+        .recreate-button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+            background-color: orange;
+        }
+        .recreate-button:hover {
+            background-color: darkorange;
+        }
     </style>
 </head>
 <body>
@@ -71,6 +84,7 @@
         <div class="settings-title">Settings</div>
         <button class="clear-button" onclick="clearAndRefresh()">Clear & Refresh Emails</button>
         <button class="update-button" onclick="checkForUpdate()">Check for Updates</button>
+        <button class="recreate-button" onclick="recreateTable()">Recreate Email Table</button>
         <p id="status"></p>
     </div>
 
@@ -84,6 +98,13 @@
 
         function checkForUpdate() {
             fetch('/check_update', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => document.getElementById('status').innerText = data.message)
+                .catch(error => console.error('Error:', error));
+        }
+
+        function recreateTable() {
+            fetch('/recreate_table', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => document.getElementById('status').innerText = data.message)
                 .catch(error => console.error('Error:', error));

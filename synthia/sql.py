@@ -211,3 +211,28 @@ def get_email_data():
     except Exception as e:
         logging.error(f"❌ Unexpected error: {e}")
         return 0, {}
+
+def recreate_table():
+    """Drop and recreate the email table."""
+    conn = connect_db()
+    if conn is None:
+        logging.error("Could not establish database connection.")
+        return
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS synthia_emails")
+    conn.commit()
+    cursor.execute('''
+        CREATE TABLE synthia_emails (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            unread_count INTEGER,
+            sender TEXT,
+            email_count INTEGER,
+            email_id TEXT UNIQUE,
+            analyzed BOOLEAN DEFAULT 0,
+            category TEXT DEFAULT 'unknown'
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    logging.info("Table 'synthia_emails' recreated.")
