@@ -3,7 +3,7 @@ import logging
 import sql
 import gmail
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="/app/templates")  # Ensure correct template path
 
 def get_email_data():
     """Fetch email summary data from the database."""
