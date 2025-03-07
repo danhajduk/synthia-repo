@@ -134,6 +134,9 @@
                 </li>
             {% endfor %}
         </ul>
+        {% if not senders %}
+            <p>No senders found.</p>
+        {% endif %}
     </div>
 </body>
 </html>

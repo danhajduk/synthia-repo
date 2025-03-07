@@ -7,14 +7,17 @@ app = Flask(__name__)
 def get_email_data():
     """Fetch email summary data from the database."""
     try:
-        return sql.get_email_data()
+        data = sql.get_email_data()
+        if isinstance(data["senders"], list):  # Convert list to dictionary if needed
+            data["senders"] = {sender["sender"]: sender["count"] for sender in data["senders"]}
+        return data
     except Exception as e:
         logging.error(f"Error fetching email data: {e}")
         return {
             "unread_count": 0,
             "last_fetch": "Never",
             "cutoff_date": "N/A",
-            "senders": []
+            "senders": {}
         }
 
 @app.route("/")
