@@ -61,26 +61,23 @@ def clear_email_table():
 
 def save_email_data(unread_count, sender_counts):
     """Save unread email count & sender counts to Synthia's database."""
-    logging.info("💾 Attempting to save email data to the database...")
+    logging.info("💾 Saving email data to the database...")
     logging.info(f"📩 Unread Emails: {unread_count}")
     logging.info(f"📨 Sender Counts: {json.dumps(sender_counts, indent=2)}")
 
-    conn = connect_db()
-    if conn is None:
-        logging.error("❌ Could not connect to database to save data.")
-        return
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     try:
         for sender, count in sender_counts.items():
-            logging.info(f"🔹 Inserting: {sender} - {count} emails")
+            logging.info(f"🔹 Inserting: Sender={sender}, Emails={count}")
             cursor.execute('''
                 INSERT INTO synthia_emails (timestamp, unread_count, sender, email_count)
                 VALUES (datetime('now'), ?, ?, ?)
             ''', (unread_count, sender, count))
 
         conn.commit()
-        logging.info("✅ Email data successfully saved to Synthia's database.")
+        logging.info("✅ Email data successfully saved.")
 
     except sqlite3.Error as e:
         logging.error(f"❌ Database error while saving email data: {e}")
