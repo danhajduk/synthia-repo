@@ -1,6 +1,7 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import logging
 import sql
+import gmail
 
 app = Flask(__name__)
 
@@ -8,7 +9,7 @@ def get_email_data():
     """Fetch email summary data from the database."""
     try:
         data = sql.get_email_data()
-        if isinstance(data["senders"], list):  # Convert list to dictionary if needed
+        if isinstance(data["senders"], list):
             data["senders"] = {sender["sender"]: sender["count"] for sender in data["senders"]}
         return data
     except Exception as e:
@@ -22,14 +23,32 @@ def get_email_data():
 
 @app.route("/")
 def index():
-    """Render main UI with email data."""
+    """Render main dashboard."""
     data = get_email_data()
     return render_template("index.html", **data)
 
-@app.route("/api/status")
-def api_status():
-    """Return email summary data as JSON."""
-    return jsonify(get_email_data())
+@app.route("/settings")
+def settings():
+    """Render settings page."""
+    return render_template("settings.html")
+
+@app.route("/clear_and_refresh", methods=["POST"])
+def clear_and_refresh():
+    """Clear email table and fetch new emails."""
+    try:
+        sql.clear_email_table()
+        emails = gmail.fetch_unread_emails()
+        
+        if emails:
+            sender_counts = {}
+            for email in emails:
+                sender_counts[email] = sender_counts.get(email, 0) + 1
+            sql.save_email_data(len(emails), sender_counts)
+
+        return jsonify({"message": "Database cleared & emails refreshed."})
+    except Exception as e:
+        logging.error(f"Error clearing and refreshing emails: {e}")
+        return jsonify({"message": "Error occurred."}), 500
 
 def run():
     """Run the Flask web server on Ingress port 5000."""

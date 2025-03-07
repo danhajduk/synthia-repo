@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,130 +14,95 @@
             height: 100vh;
             margin: 0;
             padding: 20px;
-            background: url('/static/synthia_logo.png') no-repeat center;
-            background-size: contain;
-            background-color: #f4f4f4; /* Fallback color */
+            background: url('/static/synthia_logo.png') no-repeat center center fixed;
+            background-size: cover;
         }
-        .header {
-            text-align: center;
-            font-size: 45px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 10px;
-            border-radius: 8px;
-            width: 100%;
-        }
-        .version {
-            font-size: 18px;
-            font-weight: normal;
-            color: #777;
-            margin-left: 10px;
-        }
+
         .container {
-            width: 350px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: left; /* Align text inside the box to the left */
-            margin-bottom: 20px; /* Add space between boxes */
-        }
-        .gmail-icon {
-            position: relative;
-            width: 64px;
-            height: 64px;
-            margin: 0 auto;
-        }
-        .gmail-icon img {
             width: 100%;
-            height: 100%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        .badge {
-            position: absolute;
-            top: -5px;
-            right: -10px;
-            background: red;
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 12px;
+
+        h1 {
+            margin-top: 0;
         }
-        .data {
-            font-size: 18px;
-            margin-top: 10px;
-            text-align: left; /* Align text inside the box to the left */
+
+        .email-summary {
+            margin: 20px 0;
         }
-        .senders-container {
-            width: 350px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: left; /* Align to the left */
+
+        .email-summary h2 {
+            margin: 10px 0;
         }
-        .senders-title {
-            font-size: 20px;
-            font-weight: bold;
-            text-align: left;
-            margin-bottom: 10px;
-        }
-        .senders-list {
-            list-style: none;
+
+        .email-summary ul {
+            list-style-type: none;
             padding: 0;
         }
-        .senders-list li {
+
+        .email-summary li {
+            background-color: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
             display: flex;
             justify-content: space-between;
-            padding: 8px 10px;
-            border-bottom: 1px solid #ddd;
-            font-size: 16px;
         }
-        .senders-list .email-badge {
-            background: red;
-            color: white;
-            font-size: 14px;
+
+        .email-summary li span {
             font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 12px;
+        }
+
+        .menu {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .menu button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .menu button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
+
 <body>
-    <div class="header">
-        Synthia - Personal AI Assistant 
-        <span class="version">v{{ version }}</span>
-    </div>
-    <div class="container">
-        <div class="gmail-icon">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" alt="Gmail Icon">
-            <div class="badge">{{ unread_count }}</div>
-        </div>
-        <div class="data">
-            <p><strong>Unread Emails:</strong> {{ unread_count }}</p>
-            <p><strong>Last Fetch:</strong> {{ last_fetch }}</p>
-            <p><strong>Cutoff Date:</strong> {{ cutoff_date }}</p>
-        </div>
+    <div class="menu">
+        <h1>Synthia - Email Dashboard</h1>
+        <button onclick="window.location.href='/settings'">Settings</button>
     </div>
 
-    <!-- Email Senders List -->
-    <div class="senders-container">
-        <div class="senders-title">Email Sources</div>
-        <ul class="senders-list">
-            {% for sender, count in senders.items() %}
+    <div class="container">
+        <div class="email-summary">
+            <h2>Unread Emails: {{ unread_count }}</h2>
+            <h3>Last Fetch: {{ last_fetch }}</h3>
+            <h3>Email Sources</h3>
+            <ul>
+                {% for sender, count in senders.items() %}
                 <li>
                     <span>{{ sender }}</span>
-                    <span class="email-badge">{{ count }}</span>
+                    <span>{{ count }} emails</span>
                 </li>
-            {% endfor %}
-        </ul>
-        {% if not senders %}
+                {% endfor %}
+            </ul>
+            {% if not senders %}
             <p>No senders found.</p>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
 </body>
+
 </html>
