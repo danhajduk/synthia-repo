@@ -1,14 +1,12 @@
 import logging
 import json
 import os
-import pickle
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 # Config path in Home Assistant add-on
 CONFIG_PATH = "/data/options.json"
-TOKEN_PATH = "/data/token.pickle"
 
 # Gmail API Scope
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]

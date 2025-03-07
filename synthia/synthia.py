@@ -20,7 +20,8 @@ def main_loop():
     """Main loop to fetch emails and store them in the database."""
     while True:
         logging.info("Checking for unread emails...")
-        emails = gmail.fetch_important_emails()
+        emails = gmail.fetch_unread_emails()
+
         
         if emails:
             sender_counts = {}
