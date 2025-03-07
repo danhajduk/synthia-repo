@@ -4,10 +4,10 @@ import os
 
 app = Flask(__name__, template_folder="/app/templates")
 
-DB_PATH = "/config/home-assistant_v2.db"
+DB_PATH = "/data/synthia.db"
 
 def get_email_data():
-    """Retrieve latest email summary from HA database."""
+    """Retrieve latest email summary from Synthia's database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     

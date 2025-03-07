@@ -9,23 +9,14 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# Database Path
-DB_PATH = "/config/home-assistant_v2.db"
+# Database Path (Using Synthia's Own Database)
+DB_PATH = "/data/synthia.db"
 
 def log_directory_structure():
     """Log the directory structure for debugging."""
     logging.info(f"Current working directory: {os.getcwd()}")
 
-    config_dir = "/config"
     data_dir = "/data"
-
-    logging.info(f"Listing files in {config_dir}:")
-    try:
-        for item in os.listdir(config_dir):
-            full_path = os.path.join(config_dir, item)
-            logging.info(f" - {full_path} ({'DIR' if os.path.isdir(full_path) else 'FILE'})")
-    except Exception as e:
-        logging.error(f"Could not list {config_dir}: {e}")
 
     logging.info(f"Listing files in {data_dir}:")
     try:
@@ -35,25 +26,8 @@ def log_directory_structure():
     except Exception as e:
         logging.error(f"Could not list {data_dir}: {e}")
 
-def wait_for_db():
-    """Wait for Home Assistant's database to be available."""
-    retries = 10
-    while not os.path.exists(DB_PATH) and retries > 0:
-        logging.warning(f"Database file {DB_PATH} not found. Retrying in 10 seconds...")
-        time.sleep(10)
-        retries -= 1
-
-    if os.path.exists(DB_PATH):
-        logging.info(f"Database {DB_PATH} is now available.")
-        return True
-    else:
-        logging.error("Database is still missing after multiple attempts.")
-        return False
-
 def connect_db():
-    """Ensure database exists and has correct permissions."""
-    if not wait_for_db():
-        return None
+    """Ensure database exists and establish connection."""
     try:
         conn = sqlite3.connect(DB_PATH, timeout=10)
         return conn
@@ -62,7 +36,7 @@ def connect_db():
         return None
 
 def create_table():
-    """Create table in HA's database if it doesn't exist."""
+    """Create table in Synthia's database if it doesn't exist."""
     conn = connect_db()
     if conn is None:
         logging.error("Could not establish database connection.")
@@ -82,7 +56,7 @@ def create_table():
     logging.info("Table 'synthia_emails' created or already exists.")
 
 def save_email_data(unread_count, sender_counts):
-    """Save unread email count & sender counts to HA's database."""
+    """Save unread email count & sender counts to Synthia's database."""
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
     conn = connect_db()
     if conn is None:
@@ -98,7 +72,7 @@ def save_email_data(unread_count, sender_counts):
 
     conn.commit()
     conn.close()
-    logging.info("Email data successfully saved to database.")
+    logging.info("Email data successfully saved to Synthia's database.")
 
 if __name__ == "__main__":
     logging.info("Synthia is running...")

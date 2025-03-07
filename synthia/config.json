@@ -1,6 +1,6 @@
 {
   "name": "Synthia - AI Personal Assistant",
-  "version": "0.0.10f",
+  "version": "0.0.11",
   "slug": "synthia",
   "description": "A personal AI assistant for Home Assistant.",
   "startup": "application",
@@ -39,5 +39,6 @@
       "refresh_token": "str"
     }
   },
-  "map": ["config:rw"]  /* <-- This gives Synthia read/write access to /config */
+  "map": ["data:rw"],  /* <-- Use /data instead of /config to store Synthia's database */
+  "host_network": true  /* <-- Ensures Synthia can connect to HA’s network */
 }
