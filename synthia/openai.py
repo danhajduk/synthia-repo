@@ -102,15 +102,18 @@ def identify_important_senders():
     response = generate_response(prompt)
     important_senders = response.split("\n")
     logging.info(f"📝 Response from OpenAI: {important_senders}")
+ 
     # Parse the response to extract senders
     try:
         json_start = response.index("{")
         json_end = response.rindex("}") + 1
         json_data = response[json_start:json_end]
-        parsed_senders = json.loads(json_data)
+        json_data = json_data.replace("```json", "").replace("```", "").strip()
+        parsed_senders = json.loads(json_data).get("important_senders", [])
     except (ValueError, json.JSONDecodeError) as e:
         logging.error(f"❌ Error parsing JSON response from OpenAI: {e}")
         parsed_senders = []
+ 
     # Save the identified important senders to the database
     for sender in parsed_senders:
         if sender:
