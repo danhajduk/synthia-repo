@@ -150,11 +150,15 @@
             // Fetch and display important senders
             function fetchImportantSenders() {
                 $.getJSON("/important_senders", function(data) {
+                    console.log("Received data:", data); // Log the received data for debugging
                     var importantSendersList = $("#important_senders_list");
                     importantSendersList.empty();
                     data.important_senders.forEach(function(sender) {
-                        importantSendersList.append("<li>" + sender.sender + " (" + sender.category + ")</li>");
+                        console.log("Processing sender:", sender); // Log each sender for debugging
+                        importantSendersList.append("<li>" + sender + "</li>");
                     });
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error fetching important senders:", textStatus, errorThrown); // Log any errors
                 });
             }
 
@@ -163,6 +167,8 @@
                 $.post("/check_senders_openai", function(data) {
                     alert(data.message);
                     fetchImportantSenders();
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error checking senders in OpenAI:", textStatus, errorThrown); // Log any errors
                 });
             });
 
