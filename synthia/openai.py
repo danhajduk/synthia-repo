@@ -22,22 +22,24 @@ def load_openai_config():
         logging.error(f"❌ Failed to load OpenAI configuration: {e}")
         return {}
 
-def generate_response(prompt):
+def generate_json_response(prompt, json_schema, system_role):
     """
-    Generate a response using OpenAI's GPT-4o mini API.
+    Generate a structured JSON response using OpenAI's GPT-4o mini API with a predefined JSON schema.
 
     Args:
         prompt (str): The prompt to send to the OpenAI API.
+        json_schema (dict): The JSON schema to enforce the output format.
+        system_role (str): The system role content to provide context for OpenAI.
 
     Returns:
-        str: The generated response from OpenAI.
+        dict: Parsed JSON response from OpenAI.
     """
     config = load_openai_config()
     api_key = config.get("openai_api_key")
 
     if not api_key:
         logging.error("❌ OpenAI API key is missing.")
-        return "OpenAI API key is missing."
+        return {}
 
     headers = {
         "Content-Type": "application/json",
@@ -47,24 +49,26 @@ def generate_response(prompt):
     data = {
         "model": "gpt-4o-mini",
         "messages": [
-            {"role": "system", "content": "you are a personal assistant that help with varius tasks."},
+            {"role": "system", "content": system_role},
             {"role": "user", "content": prompt}
         ],
         "max_tokens": 150,
-        "temperature": 0.7
+        "temperature": 0.3,
+        "response_format": "json"
     }
 
     try:
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
         response.raise_for_status()
         result = response.json()
-        return result["choices"][0]["message"]["content"].strip()
+        json_response = json.loads(result["choices"][0]["message"]["content"])
+        return json_response
     except requests.exceptions.HTTPError as e:
         logging.error(f"❌ HTTP error generating response from OpenAI: {e}")
-        return "HTTP error generating response from OpenAI."
+        return {}
     except Exception as e:
         logging.error(f"❌ Error generating response from OpenAI: {e}")
-        return "Error generating response from OpenAI."
+        return {}
 
 def identify_important_senders():
     """
@@ -93,39 +97,53 @@ def identify_important_senders():
         logging.info("No new senders to analyze.")
         return []
 
+    # Define JSON schema for expected OpenAI response
+    json_schema = {
+        "type": "object",
+        "properties": {
+            "important_senders": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "required": ["important_senders"]
+    }
+
     # Prepare the prompt for OpenAI
     prompt = (
         "Identify important email senders from the following list and return them in JSON format:\n\n" + "\n".join(senders)
     )
     logging.info(f"📝 Prompt sent to OpenAI: {prompt}")
-    # Generate response using OpenAI
-    response = generate_response(prompt)
-    important_senders = response.split("\n")
-    logging.info(f"📝 Response from OpenAI: {important_senders}")
- 
-    # Parse the response to extract senders
-    try:
-        json_start = response.index("{")
-        json_end = response.rindex("}") + 1
-        json_data = response[json_start:json_end]
-        json_data = json_data.replace("```json", "").replace("```", "").strip()
-        parsed_senders = json.loads(json_data).get("important_senders", [])
-    except (ValueError, json.JSONDecodeError) as e:
-        logging.error(f"❌ Error parsing JSON response from OpenAI: {e}")
-        parsed_senders = []
+    
+    # Generate response using OpenAI with JSON schema
+    response = generate_json_response(prompt, json_schema, "You are an AI that filters important email senders and returns structured JSON output.")
+    
+    if not response:
+        logging.error("❌ No response received from OpenAI.")
+        return []
+
+    important_senders = response.get("important_senders", [])
+    logging.info(f"✅ Identified important senders: {important_senders}")
  
     # Save the identified important senders to the database
-    for sender in parsed_senders:
+    for sender in important_senders:
         if sender:
             sql.add_important_sender(sender, category="Important")
 
-    logging.info(f"✅ Identified important senders: {parsed_senders}")
-    return parsed_senders
+    return important_senders
 
 if __name__ == "__main__":
     # Example usage
     prompt = "What is the capital of France?"
-    response = generate_response(prompt)
+    response = generate_json_response(prompt, {
+        "type": "object",
+        "properties": {
+            "answer": {"type": "string"}
+        },
+        "required": ["answer"]
+    }, "You are an AI that provides concise and factual answers.")
     print(response)
 
     important_senders = identify_important_senders()
