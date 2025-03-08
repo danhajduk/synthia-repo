@@ -395,21 +395,21 @@ def remove_important_sender(sender):
 
 def get_important_senders():
     """
-    Retrieve the list of important senders from the database.
+    Retrieve the list of important senders and their categories from the database.
 
     Returns:
-        list: A list of important senders.
+        list: A list of tuples containing important senders and their categories.
     """
     logging.info("📥 Fetching important senders from the database...")
 
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT sender FROM synthia_important_senders")
+        cursor.execute("SELECT sender, category FROM synthia_important_senders")
         rows = cursor.fetchall()
         conn.close()
 
-        important_senders = [row[0] for row in rows]
+        important_senders = [(row[0], row[1]) for row in rows]
         logging.info(f"✅ Retrieved important senders: {important_senders}")
         logging.info(f"🔎 Retrieved {len(important_senders)} important senders from database.")
         return important_senders
