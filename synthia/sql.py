@@ -410,6 +410,7 @@ def get_important_senders():
         conn.close()
 
         important_senders = [row[0] for row in rows]
+        logging.info(f"✅ Retrieved important senders: {important_senders}")
         logging.info(f"🔎 Retrieved {len(important_senders)} important senders from database.")
         return important_senders
 
