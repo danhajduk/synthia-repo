@@ -1,9 +1,3 @@
-"""
-This module provides functionality to interact with the OpenAI API.
-It includes functions to load configuration, authenticate with OpenAI,
-and generate responses using the OpenAI API.
-"""
-
 import logging
 import json
 import requests
@@ -30,13 +24,13 @@ def load_openai_config():
 
 def generate_response(prompt):
     """
-    Generate a response using the OpenAI API.
+    Generate a response using OpenAI's GPT-4o mini API.
 
     Args:
         prompt (str): The prompt to send to the OpenAI API.
 
     Returns:
-        str: The generated response from the OpenAI API.
+        str: The generated response from OpenAI.
     """
     config = load_openai_config()
     api_key = config.get("openai_api_key")
@@ -51,8 +45,11 @@ def generate_response(prompt):
     }
 
     data = {
-        "model": "text-davinci-003",
-        "prompt": prompt,
+        "model": "gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "you are a personal assistant that help with varius tasks."},
+            {"role": "user", "content": prompt}
+        ],
         "max_tokens": 150,
         "temperature": 0.7
     }
@@ -61,7 +58,7 @@ def generate_response(prompt):
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
         response.raise_for_status()
         result = response.json()
-        return result["choices"][0]["text"].strip()
+        return result["choices"][0]["message"]["content"].strip()
     except requests.exceptions.HTTPError as e:
         logging.error(f"❌ HTTP error generating response from OpenAI: {e}")
         return "HTTP error generating response from OpenAI."
