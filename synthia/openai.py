@@ -49,19 +49,30 @@ def generate_json_response(prompt, json_schema, system_role):
     data = {
         "model": "gpt-4o-mini",
         "messages": [
-            {"role": "system", "content": system_role},
+            {
+                "role": "system",
+                "content": system_role + 
+                           "\nEnsure the response strictly follows this JSON format without additional text:\n\n" +
+                           json.dumps(json_schema, indent=2)
+            },
             {"role": "user", "content": prompt}
         ],
-        "max_tokens": 150,
-        "temperature": 0.3,
-        "response_format": "json"
+        "max_tokens": 300,
+        "temperature": 0.3
     }
 
     try:
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
         response.raise_for_status()
         result = response.json()
-        json_response = json.loads(result["choices"][0]["message"]["content"])
+
+        # Ensure response is properly formatted
+        raw_content = result["choices"][0]["message"]["content"]
+        
+        # Strip potential code blocks
+        json_content = raw_content.replace("```json", "").replace("```", "").strip()
+        
+        json_response = json.loads(json_content)
         return json_response
     except requests.exceptions.HTTPError as e:
         logging.error(f"❌ HTTP error generating response from OpenAI: {e}")
@@ -111,9 +122,12 @@ def identify_important_senders():
         "required": ["important_senders"]
     }
 
+    # Format the senders as JSON instead of a long string list
+    senders_json = json.dumps({"senders": senders}, indent=2)
+
     # Prepare the prompt for OpenAI
     prompt = (
-        "Identify important email senders from the following list and return them in JSON format:\n\n" + "\n".join(senders)
+        "Identify important email senders from the following JSON list and return them in JSON format:\n\n" + senders_json
     )
     logging.info(f"📝 Prompt sent to OpenAI: {prompt}")
     
