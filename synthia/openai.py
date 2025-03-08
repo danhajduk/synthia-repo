@@ -98,11 +98,11 @@ def identify_important_senders():
         "Identify which of the following email senders could be important. "
         "Return a list of important senders:\n\n" + "\n".join(senders)
     )
-
+    logging.info(f"📝 Prompt sent to OpenAI: {prompt}")
     # Generate response using OpenAI
     response = generate_response(prompt)
     important_senders = response.split("\n")
-
+    logging.info(f"📝 Response from OpenAI: {important_senders}")
     # Parse the response to extract senders
     parsed_senders = []
     for sender in important_senders:
