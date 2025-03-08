@@ -103,13 +103,19 @@ def identify_important_senders():
     response = generate_response(prompt)
     important_senders = response.split("\n")
 
-    # Save the identified important senders to the database
+    # Parse the response to extract senders
+    parsed_senders = []
     for sender in important_senders:
-        if sender.strip():
-            sql.add_important_sender(sender.strip(), category="Important")  # Ensure 'category' column exists
+        if sender.strip() and not sender.startswith("Identify"):
+            parsed_senders.append(sender.strip())
 
-    logging.info(f"✅ Identified important senders: {important_senders}")
-    return important_senders
+    # Save the identified important senders to the database
+    for sender in parsed_senders:
+        if sender:
+            sql.add_important_sender(sender, category="Important")
+
+    logging.info(f"✅ Identified important senders: {parsed_senders}")
+    return parsed_senders
 
 if __name__ == "__main__":
     # Example usage
