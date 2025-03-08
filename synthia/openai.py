@@ -96,7 +96,7 @@ def identify_important_senders():
     # Prepare the prompt for OpenAI
     prompt = (
         "Identify which of the following email senders could be important. "
-        "Return a list of important senders:\n\n" + "\n".join(senders)
+        "Return a list of important senders in csv format:\n\n" + "\n".join(senders)
     )
     logging.info(f"📝 Prompt sent to OpenAI: {prompt}")
     # Generate response using OpenAI
