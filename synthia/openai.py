@@ -95,8 +95,7 @@ def identify_important_senders():
 
     # Prepare the prompt for OpenAI
     prompt = (
-        "Identify which of the following email senders could be important. "
-        "Return a list of important senders in csv format:\n\n" + "\n".join(senders)
+        "Identify important email senders from the following list and return them in JSON format:\n\n" + "\n".join(senders)
     )
     logging.info(f"📝 Prompt sent to OpenAI: {prompt}")
     # Generate response using OpenAI
@@ -104,11 +103,14 @@ def identify_important_senders():
     important_senders = response.split("\n")
     logging.info(f"📝 Response from OpenAI: {important_senders}")
     # Parse the response to extract senders
-    parsed_senders = []
-    for sender in important_senders:
-        if sender.strip() and not sender.startswith("Identify"):
-            parsed_senders.append(sender.strip())
-
+    try:
+        json_start = response.index("{")
+        json_end = response.rindex("}") + 1
+        json_data = response[json_start:json_end]
+        parsed_senders = json.loads(json_data)
+    except (ValueError, json.JSONDecodeError) as e:
+        logging.error(f"❌ Error parsing JSON response from OpenAI: {e}")
+        parsed_senders = []
     # Save the identified important senders to the database
     for sender in parsed_senders:
         if sender:
