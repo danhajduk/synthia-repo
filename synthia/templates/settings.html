@@ -84,6 +84,30 @@
         .debug-switch input {
             margin-left: 10px;
         }
+
+        .important-senders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .important-senders-table th, .important-senders-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .important-senders-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+
+        .important-senders-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .important-senders-table tr:hover {
+            background-color: #ddd;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -103,7 +127,14 @@
             <input type="checkbox" id="debug" onchange="toggleDebug(this)">
         </div>
         <h2>Important Senders</h2>
-        <ul id="important_senders_list"></ul>
+        <table class="important-senders-table">
+            <thead>
+                <tr>
+                    <th>Sender</th>
+                </tr>
+            </thead>
+            <tbody id="important_senders_list"></tbody>
+        </table>
         <p id="status"></p>
     </div>
 
@@ -155,7 +186,7 @@
                     importantSendersList.empty();
                     data.important_senders.forEach(function(sender) {
                         console.log("Processing sender:", sender); // Log each sender for debugging
-                        importantSendersList.append("<li>" + sender + "</li>");
+                        importantSendersList.append("<tr><td>" + sender + "</td></tr>");
                     });
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     console.error("Error fetching important senders:", textStatus, errorThrown); // Log any errors
